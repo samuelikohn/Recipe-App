@@ -1,5 +1,6 @@
 import * as SQLite from "expo-sqlite"
 import { getDb } from "../client"
+import { notifyChange } from "../changeEmitter"
 import { Component, Recipe, RecipeSummary } from "../../models/types"
 import { upsertIngredient } from "./ingredients"
 import { upsertEquipment } from "./equipment"
@@ -89,6 +90,7 @@ export async function createRecipe(recipe: Recipe): Promise<number> {
 		recipeId = await insertRecipeTree(db, recipe)
 	})
 
+	notifyChange()
 	return recipeId
 }
 
@@ -129,6 +131,7 @@ export async function updateRecipe(
 		recipeId = await insertRecipeTree(db, recipe)
 	})
 
+	notifyChange()
 	return recipeId
 }
 
@@ -145,6 +148,7 @@ export async function updateRecipe(
 export async function deleteRecipe(name: string): Promise<void> {
 	const db = await getDb()
 	await db.runAsync(`DELETE FROM recipes WHERE name = ?;`, [name])
+	notifyChange()
 }
 
 // ---------------------------------------------------------------------------
