@@ -1,0 +1,1 @@
+// opens/holds the SQLite connection (singleton)
