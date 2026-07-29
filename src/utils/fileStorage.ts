@@ -1,15 +1,14 @@
-// Rewritten against the class-based expo-file-system API (default export
-// as of Expo SDK 52+). The old function-style API this file originally
-// used — FileSystem.documentDirectory, getInfoAsync, makeDirectoryAsync,
-// copyAsync, deleteAsync — moved to a separate `expo-file-system/legacy`
-// import; that's what "'documentDirectory' not found in imported
-// namespace 'FileSystem'" means. If you're intentionally pinned to an
-// older SDK, the one-line fix is swapping the import below for:
-//   import * as FileSystem from 'expo-file-system/legacy';
-// and leaving the rest of this file as it was. This version uses the new
-// File/Directory/Paths classes instead, which is the forward-looking API.
+// Uses the class-based expo-file-system API (Directory / File / Paths).
+// In expo-file-system v18 (the version shipped with Expo SDK 53) these
+// classes live at `expo-file-system/next` — the main entry still only
+// exports the legacy `documentDirectory`, `getInfoAsync`, etc.  In a
+// later major release the classes were promoted to the main export;
+// when this project upgrades past that boundary, drop the `/next`
+// subpath below. Getting this wrong crashes on import with
+// "Cannot read property 'document' of undefined" because `Paths` is
+// undefined and this module reads `Paths.document` at top level.
 
-import { Directory, File, Paths } from "expo-file-system"
+import { Directory, File, Paths } from "expo-file-system/next"
 
 const imagesDirectory = new Directory(Paths.document, "images")
 
