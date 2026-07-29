@@ -5,7 +5,10 @@ import React, {
 	useState,
 	ReactNode
 } from "react"
+import { ActivityIndicator, StyleSheet, Text, View } from "react-native"
 import { getDb } from "../db/client"
+import { colors } from "../theme/colors"
+import { fontSize, fontWeight } from "../theme/typography"
 
 type DatabaseContextValue = {
 	isReady: boolean
@@ -56,7 +59,20 @@ export function DatabaseProvider({ children }: { children: ReactNode }) {
 
 	return (
 		<DatabaseContext.Provider value={{ isReady, error }}>
-			{children}
+			{error ? (
+				<View style={styles.centered}>
+					<Text style={styles.errorTitle}>
+						Couldn't open the recipe database
+					</Text>
+					<Text style={styles.errorBody}>{error.message}</Text>
+				</View>
+			) : isReady ? (
+				children
+			) : (
+				<View style={styles.centered}>
+					<ActivityIndicator />
+				</View>
+			)}
 		</DatabaseContext.Provider>
 	)
 }
@@ -65,3 +81,25 @@ export function DatabaseProvider({ children }: { children: ReactNode }) {
 export function useDatabaseReady(): DatabaseContextValue {
 	return useContext(DatabaseContext)
 }
+
+const styles = StyleSheet.create({
+	centered: {
+		flex: 1,
+		alignItems: "center",
+		justifyContent: "center",
+		padding: 24,
+		backgroundColor: colors.background
+	},
+	errorTitle: {
+		fontSize: fontSize.componentTitle,
+		fontWeight: fontWeight.semibold,
+		color: colors.textPrimary,
+		textAlign: "center"
+	},
+	errorBody: {
+		marginTop: 8,
+		fontSize: fontSize.body,
+		color: colors.textMuted,
+		textAlign: "center"
+	}
+})
