@@ -1,5 +1,8 @@
 import { StyleSheet, Text, View } from "react-native"
 import { Ingredient } from "../models/types"
+import { colors } from "../theme/colors"
+import { fontSize, fontWeight } from "../theme/typography"
+import { formatAmount } from "../utils/format"
 
 type Props = {
 	ingredient: Ingredient
@@ -32,13 +35,6 @@ export function IngredientRow({ ingredient, servingsMultiplier = 1 }: Props) {
 	)
 }
 
-function formatAmount(value: number): string {
-	if (!Number.isFinite(value)) return ""
-	if (Number.isInteger(value)) return value.toString()
-	// Keep it simple — one or two decimals depending on how "clean" the value is.
-	return value.toFixed(value * 10 === Math.round(value * 10) ? 1 : 2)
-}
-
 const styles = StyleSheet.create({
 	row: {
 		flexDirection: "row",
@@ -46,13 +42,13 @@ const styles = StyleSheet.create({
 	},
 	amount: {
 		width: 90,
-		fontSize: 14,
-		fontWeight: "600",
-		color: "#333"
+		fontSize: fontSize.body,
+		fontWeight: fontWeight.semibold,
+		color: colors.textDefault
 	},
 	name: {
 		flex: 1,
-		fontSize: 14,
-		color: "#333"
+		fontSize: fontSize.body,
+		color: colors.textDefault
 	}
 })

@@ -13,6 +13,9 @@ import { ImagePickerGrid } from "../components/ImagePickerGrid"
 import { TagInput } from "../components/TagInput"
 import { useRecipe } from "../hooks/useRecipe"
 import { RecipeDraft, ScreenProps } from "../navigation/types"
+import { colors } from "../theme/colors"
+import { fontSize, fontWeight, typography } from "../theme/typography"
+import { validateRecipe } from "../utils/validation"
 import { createRecipe, updateRecipe } from "../db/repositories/recipes"
 
 const EMPTY_DRAFT: RecipeDraft = {
@@ -73,18 +76,16 @@ export function RecipeFormScreen({
 
 	async function onSave() {
 		const name = draft.name.trim()
-		if (!name) {
-			Alert.alert("Name is required")
-			return
-		}
-		if (draft.num_servings < 1) {
-			Alert.alert("Servings must be at least 1")
+		const toPersist = { ...draft, name, id: draft.id ?? 0 }
+
+		const check = validateRecipe(toPersist)
+		if (!check.ok) {
+			Alert.alert(check.message)
 			return
 		}
 
 		setSaving(true)
 		try {
-			const toPersist = { ...draft, name, id: draft.id ?? 0 }
 			if (editingName) {
 				await updateRecipe(editingName, toPersist)
 			} else {
@@ -146,7 +147,7 @@ export function RecipeFormScreen({
 					value={draft.name}
 					onChangeText={(name) => setDraft((d) => ({ ...d, name }))}
 					placeholder="Recipe name"
-					placeholderTextColor="#999"
+					placeholderTextColor={colors.textPlaceholder}
 				/>
 			</Field>
 
@@ -158,7 +159,7 @@ export function RecipeFormScreen({
 					}
 					onChangeText={updateServings}
 					placeholder="1"
-					placeholderTextColor="#999"
+					placeholderTextColor={colors.textPlaceholder}
 					keyboardType="number-pad"
 				/>
 			</Field>
@@ -230,43 +231,40 @@ function Field({
 const styles = StyleSheet.create({
 	container: {
 		flex: 1,
-		backgroundColor: "#fff",
+		backgroundColor: colors.surface,
 		padding: 16
 	},
 	headerButton: {
 		paddingHorizontal: 8
 	},
 	headerButtonText: {
-		fontSize: 16,
-		color: "#3b82f6",
-		fontWeight: "600"
+		fontSize: fontSize.input,
+		color: colors.primary,
+		fontWeight: fontWeight.semibold
 	},
 	field: {
 		marginBottom: 20
 	},
 	fieldLabel: {
-		fontSize: 12,
-		fontWeight: "700",
-		color: "#666",
-		textTransform: "uppercase",
-		letterSpacing: 0.5,
+		...typography.sectionHeader,
+		color: colors.textMuted,
 		marginBottom: 6
 	},
 	input: {
 		borderWidth: 1,
-		borderColor: "#ddd",
+		borderColor: colors.borderStrong,
 		borderRadius: 8,
 		paddingHorizontal: 12,
 		paddingVertical: 10,
-		fontSize: 16,
-		color: "#222",
-		backgroundColor: "#fff"
+		fontSize: fontSize.input,
+		color: colors.textBody,
+		backgroundColor: colors.surface
 	},
 	componentRow: {
 		flexDirection: "row",
 		alignItems: "center",
 		borderWidth: 1,
-		borderColor: "#eee",
+		borderColor: colors.border,
 		borderRadius: 8,
 		marginBottom: 8,
 		padding: 12
@@ -275,32 +273,32 @@ const styles = StyleSheet.create({
 		flex: 1
 	},
 	componentName: {
-		fontSize: 16,
-		fontWeight: "600",
-		color: "#222"
+		fontSize: fontSize.input,
+		fontWeight: fontWeight.semibold,
+		color: colors.textBody
 	},
 	componentMeta: {
-		fontSize: 12,
-		color: "#666",
+		fontSize: fontSize.meta,
+		color: colors.textMuted,
 		marginTop: 2
 	},
 	componentRemove: {
 		paddingHorizontal: 8
 	},
 	componentRemoveText: {
-		color: "#c00",
-		fontSize: 18
+		color: colors.danger,
+		fontSize: fontSize.componentTitle
 	},
 	addButton: {
 		padding: 12,
 		borderRadius: 8,
 		borderWidth: 1,
-		borderColor: "#3b82f6",
+		borderColor: colors.primary,
 		borderStyle: "dashed",
 		alignItems: "center"
 	},
 	addButtonText: {
-		color: "#3b82f6",
-		fontWeight: "600"
+		color: colors.primary,
+		fontWeight: fontWeight.semibold
 	}
 })

@@ -1,5 +1,7 @@
 import { Pressable, StyleSheet, Text, TextInput, View } from "react-native"
 import { Ingredient } from "../models/types"
+import { colors } from "../theme/colors"
+import { fontSize } from "../theme/typography"
 
 type Props = {
 	ingredient: Ingredient
@@ -30,7 +32,7 @@ export function IngredientEditor({ ingredient, onChange, onRemove }: Props) {
 					value={ingredient.name}
 					onChangeText={(name) => onChange({ ...ingredient, name })}
 					placeholder="Ingredient"
-					placeholderTextColor="#999"
+					placeholderTextColor={colors.textPlaceholder}
 					autoCorrect={false}
 				/>
 				<Pressable
@@ -49,7 +51,7 @@ export function IngredientEditor({ ingredient, onChange, onRemove }: Props) {
 					}
 					onChangeText={updateAmount}
 					placeholder="Amount"
-					placeholderTextColor="#999"
+					placeholderTextColor={colors.textPlaceholder}
 					keyboardType="decimal-pad"
 				/>
 				<TextInput
@@ -57,7 +59,7 @@ export function IngredientEditor({ ingredient, onChange, onRemove }: Props) {
 					value={ingredient.unit}
 					onChangeText={(unit) => onChange({ ...ingredient, unit })}
 					placeholder="Unit"
-					placeholderTextColor="#999"
+					placeholderTextColor={colors.textPlaceholder}
 					autoCorrect={false}
 				/>
 				<TextInput
@@ -65,7 +67,7 @@ export function IngredientEditor({ ingredient, onChange, onRemove }: Props) {
 					value={ingredient.prep}
 					onChangeText={(prep) => onChange({ ...ingredient, prep })}
 					placeholder="Prep (chopped, etc.)"
-					placeholderTextColor="#999"
+					placeholderTextColor={colors.textPlaceholder}
 					autoCorrect={false}
 				/>
 			</View>
@@ -77,7 +79,7 @@ const styles = StyleSheet.create({
 	container: {
 		paddingVertical: 8,
 		borderBottomWidth: 1,
-		borderBottomColor: "#eee"
+		borderBottomColor: colors.border
 	},
 	row: {
 		flexDirection: "row",
@@ -86,14 +88,14 @@ const styles = StyleSheet.create({
 	},
 	input: {
 		borderWidth: 1,
-		borderColor: "#ddd",
+		borderColor: colors.borderStrong,
 		borderRadius: 6,
 		paddingHorizontal: 8,
 		paddingVertical: 6,
-		fontSize: 14,
-		color: "#222",
+		fontSize: fontSize.body,
+		color: colors.textBody,
 		marginRight: 6,
-		backgroundColor: "#fff"
+		backgroundColor: colors.surface
 	},
 	name: {
 		flex: 1
@@ -112,7 +114,7 @@ const styles = StyleSheet.create({
 		paddingHorizontal: 6
 	},
 	removeText: {
-		color: "#c00",
-		fontSize: 16
+		color: colors.danger,
+		fontSize: fontSize.input
 	}
 })

@@ -1,4 +1,6 @@
 import { Pressable, StyleSheet, Text, TextInput, View } from "react-native"
+import { colors } from "../theme/colors"
+import { fontSize } from "../theme/typography"
 
 type Props = {
 	value: string
@@ -20,7 +22,7 @@ export function SearchBar({
 				value={value}
 				onChangeText={onChangeText}
 				placeholder={placeholder}
-				placeholderTextColor="#999"
+				placeholderTextColor={colors.textPlaceholder}
 				autoFocus={autoFocus}
 				autoCorrect={false}
 				returnKeyType="search"
@@ -42,7 +44,7 @@ const styles = StyleSheet.create({
 	container: {
 		flexDirection: "row",
 		alignItems: "center",
-		backgroundColor: "#f2f2f2",
+		backgroundColor: colors.surfaceAlt,
 		borderRadius: 10,
 		paddingHorizontal: 12,
 		paddingVertical: 8,
@@ -50,8 +52,8 @@ const styles = StyleSheet.create({
 	},
 	input: {
 		flex: 1,
-		fontSize: 16,
-		color: "#222",
+		fontSize: fontSize.input,
+		color: colors.textBody,
 		padding: 0
 	},
 	clear: {
@@ -62,7 +64,7 @@ const styles = StyleSheet.create({
 		justifyContent: "center"
 	},
 	clearText: {
-		color: "#666",
-		fontSize: 14
+		color: colors.textMuted,
+		fontSize: fontSize.body
 	}
 })

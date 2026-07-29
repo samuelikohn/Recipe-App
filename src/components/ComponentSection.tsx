@@ -1,5 +1,8 @@
 import { StyleSheet, Text, View } from "react-native"
 import { Component } from "../models/types"
+import { colors } from "../theme/colors"
+import { fontSize, typography } from "../theme/typography"
+import { formatDuration } from "../utils/format"
 import { EquipmentChip } from "./EquipmentChip"
 import { IngredientRow } from "./IngredientRow"
 
@@ -21,8 +24,9 @@ export function ComponentSection({ component, servingsMultiplier = 1 }: Props) {
 			<Text style={styles.title}>{component.name}</Text>
 			{totalTime > 0 ? (
 				<Text style={styles.timing}>
-					Prep {component.prep_time}m · Cook {component.cook_time}m ·
-					Total {totalTime}m
+					Prep {formatDuration(component.prep_time)} · Cook{" "}
+					{formatDuration(component.cook_time)} · Total{" "}
+					{formatDuration(totalTime)}
 				</Text>
 			) : null}
 
@@ -67,27 +71,23 @@ const styles = StyleSheet.create({
 		paddingVertical: 16,
 		paddingHorizontal: 16,
 		borderBottomWidth: 1,
-		borderBottomColor: "#eee"
+		borderBottomColor: colors.border
 	},
 	title: {
-		fontSize: 18,
-		fontWeight: "700",
-		color: "#222"
+		...typography.componentTitle,
+		color: colors.textBody
 	},
 	timing: {
 		marginTop: 2,
-		fontSize: 12,
-		color: "#666"
+		fontSize: fontSize.meta,
+		color: colors.textMuted
 	},
 	section: {
 		marginTop: 12
 	},
 	sectionHeader: {
-		fontSize: 12,
-		fontWeight: "700",
-		color: "#666",
-		textTransform: "uppercase",
-		letterSpacing: 0.5,
+		...typography.sectionHeader,
+		color: colors.textMuted,
 		marginBottom: 6
 	},
 	equipmentRow: {
@@ -95,8 +95,7 @@ const styles = StyleSheet.create({
 		flexWrap: "wrap"
 	},
 	directions: {
-		fontSize: 14,
-		lineHeight: 20,
-		color: "#333"
+		...typography.body,
+		color: colors.textDefault
 	}
 })

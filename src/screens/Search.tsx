@@ -5,6 +5,7 @@ import { RecipeCard } from "../components/RecipeCard"
 import { SearchBar } from "../components/SearchBar"
 import { useSearch } from "../hooks/useSearch"
 import { ScreenProps } from "../navigation/types"
+import { colors } from "../theme/colors"
 
 export function SearchScreen({ navigation }: ScreenProps<"Search">) {
 	const { query, setQuery, results, loading, error } = useSearch()
@@ -56,7 +57,7 @@ export function SearchScreen({ navigation }: ScreenProps<"Search">) {
 const styles = StyleSheet.create({
 	container: {
 		flex: 1,
-		backgroundColor: "#fafafa"
+		backgroundColor: colors.background
 	},
 	loading: {
 		marginTop: 40

@@ -1,5 +1,7 @@
 import { useState } from "react"
 import { StyleSheet, TextInput, View } from "react-native"
+import { colors } from "../theme/colors"
+import { fontSize } from "../theme/typography"
 import { TagChip } from "./TagChip"
 
 type Props = {
@@ -47,7 +49,7 @@ export function TagInput({ values, onChange, placeholder = "Add tag" }: Props) {
 					onSubmitEditing={commit}
 					onBlur={commit}
 					placeholder={placeholder}
-					placeholderTextColor="#999"
+					placeholderTextColor={colors.textPlaceholder}
 					autoCorrect={false}
 					returnKeyType="done"
 					blurOnSubmit={false}
@@ -60,10 +62,10 @@ export function TagInput({ values, onChange, placeholder = "Add tag" }: Props) {
 const styles = StyleSheet.create({
 	container: {
 		borderWidth: 1,
-		borderColor: "#ddd",
+		borderColor: colors.borderStrong,
 		borderRadius: 8,
 		padding: 8,
-		backgroundColor: "#fff"
+		backgroundColor: colors.surface
 	},
 	chipRow: {
 		flexDirection: "row",
@@ -73,9 +75,9 @@ const styles = StyleSheet.create({
 	input: {
 		flexGrow: 1,
 		minWidth: 100,
-		fontSize: 14,
+		fontSize: fontSize.body,
 		paddingVertical: 4,
 		paddingHorizontal: 4,
-		color: "#222"
+		color: colors.textBody
 	}
 })

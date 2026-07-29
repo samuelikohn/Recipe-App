@@ -13,6 +13,7 @@ import { RecipeCard } from "../components/RecipeCard"
 import { TagChip } from "../components/TagChip"
 import { useRecipes } from "../hooks/useRecipes"
 import { ScreenProps } from "../navigation/types"
+import { colors } from "../theme/colors"
 
 /**
  * Root of the app: full recipe list with a tag-filter chip row above it.
@@ -135,7 +136,7 @@ export function RecipeListScreen({ navigation }: ScreenProps<"RecipeList">) {
 const styles = StyleSheet.create({
 	container: {
 		flex: 1,
-		backgroundColor: "#fafafa"
+		backgroundColor: colors.background
 	},
 	headerButtons: {
 		flexDirection: "row",
@@ -146,7 +147,7 @@ const styles = StyleSheet.create({
 	},
 	headerButtonText: {
 		fontSize: 24,
-		color: "#3b82f6"
+		color: colors.primary
 	},
 	tagRow: {
 		paddingHorizontal: 8,

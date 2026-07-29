@@ -1,5 +1,6 @@
 import { Alert, Image, Pressable, StyleSheet, Text, View } from "react-native"
 import { useImagePicker } from "../hooks/useImagePicker"
+import { colors } from "../theme/colors"
 import { deleteImageFile } from "../utils/fileStorage"
 
 type Props = {
@@ -78,7 +79,7 @@ const styles = StyleSheet.create({
 		marginBottom: 8,
 		borderRadius: 8,
 		overflow: "hidden",
-		backgroundColor: "#f0f0f0"
+		backgroundColor: colors.surfaceMuted
 	},
 	image: {
 		width: TILE_SIZE,
@@ -88,11 +89,11 @@ const styles = StyleSheet.create({
 		alignItems: "center",
 		justifyContent: "center",
 		borderWidth: 1,
-		borderColor: "#ccc",
+		borderColor: colors.borderDashed,
 		borderStyle: "dashed"
 	},
 	addLabel: {
 		fontSize: 28,
-		color: "#666"
+		color: colors.textMuted
 	}
 })

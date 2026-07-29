@@ -14,6 +14,8 @@ import { RecipeImageCarousel } from "../components/RecipeImageCarousel"
 import { TagChip } from "../components/TagChip"
 import { useRecipe } from "../hooks/useRecipe"
 import { ScreenProps } from "../navigation/types"
+import { colors } from "../theme/colors"
+import { fontSize, fontWeight } from "../theme/typography"
 import { deleteRecipe } from "../db/repositories/recipes"
 import { deleteImageFile } from "../utils/fileStorage"
 
@@ -149,7 +151,7 @@ export function RecipeDetailScreen({
 const styles = StyleSheet.create({
 	container: {
 		flex: 1,
-		backgroundColor: "#fff"
+		backgroundColor: colors.surface
 	},
 	loading: {
 		marginTop: 40
@@ -158,18 +160,18 @@ const styles = StyleSheet.create({
 		paddingHorizontal: 8
 	},
 	headerButtonText: {
-		fontSize: 16,
-		color: "#3b82f6"
+		fontSize: fontSize.input,
+		color: colors.primary
 	},
 	header: {
 		padding: 16,
 		borderBottomWidth: 1,
-		borderBottomColor: "#eee"
+		borderBottomColor: colors.border
 	},
 	title: {
-		fontSize: 24,
-		fontWeight: "700",
-		color: "#111"
+		fontSize: fontSize.recipeTitle,
+		fontWeight: fontWeight.bold,
+		color: colors.textPrimary
 	},
 	servingsRow: {
 		flexDirection: "row",
@@ -177,8 +179,8 @@ const styles = StyleSheet.create({
 		marginTop: 12
 	},
 	servingsLabel: {
-		fontSize: 14,
-		color: "#555",
+		fontSize: fontSize.body,
+		color: colors.textSecondary,
 		marginRight: 12
 	},
 	servingsButton: {
@@ -187,18 +189,18 @@ const styles = StyleSheet.create({
 		borderRadius: 14,
 		alignItems: "center",
 		justifyContent: "center",
-		backgroundColor: "#eee",
+		backgroundColor: colors.border,
 		marginHorizontal: 6
 	},
 	servingsButtonText: {
-		fontSize: 18,
-		color: "#333",
-		fontWeight: "600"
+		fontSize: fontSize.componentTitle,
+		color: colors.textDefault,
+		fontWeight: fontWeight.semibold
 	},
 	servingsValue: {
-		fontSize: 16,
-		fontWeight: "600",
-		color: "#111",
+		fontSize: fontSize.input,
+		fontWeight: fontWeight.semibold,
+		color: colors.textPrimary,
 		minWidth: 24,
 		textAlign: "center"
 	},
@@ -206,8 +208,8 @@ const styles = StyleSheet.create({
 		marginLeft: 12
 	},
 	resetText: {
-		fontSize: 12,
-		color: "#3b82f6"
+		fontSize: fontSize.meta,
+		color: colors.primary
 	},
 	tagRow: {
 		flexDirection: "row",
@@ -219,11 +221,11 @@ const styles = StyleSheet.create({
 		padding: 12,
 		borderRadius: 8,
 		borderWidth: 1,
-		borderColor: "#c00",
+		borderColor: colors.danger,
 		alignItems: "center"
 	},
 	deleteText: {
-		color: "#c00",
-		fontWeight: "600"
+		color: colors.danger,
+		fontWeight: fontWeight.semibold
 	}
 })

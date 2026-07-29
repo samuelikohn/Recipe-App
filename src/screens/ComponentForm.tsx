@@ -12,6 +12,9 @@ import { EquipmentChip } from "../components/EquipmentChip"
 import { IngredientEditor } from "../components/IngredientEditor"
 import { Component, Ingredient } from "../models/types"
 import { ScreenProps } from "../navigation/types"
+import { colors } from "../theme/colors"
+import { fontSize, fontWeight, typography } from "../theme/typography"
+import { validateComponent } from "../utils/validation"
 
 const EMPTY_COMPONENT: Component = {
 	id: 0,
@@ -62,14 +65,17 @@ export function ComponentFormScreen({
 
 	function onDone() {
 		const name = draft.name.trim()
-		if (!name) {
-			Alert.alert("Component name is required")
-			return
-		}
 		const cleanedIngredients = draft.ingredients
 			.map((i) => ({ ...i, name: i.name.trim() }))
 			.filter((i) => i.name.length > 0)
-		onSubmit({ ...draft, name, ingredients: cleanedIngredients })
+		const cleaned = { ...draft, name, ingredients: cleanedIngredients }
+
+		const check = validateComponent(cleaned)
+		if (!check.ok) {
+			Alert.alert(check.message)
+			return
+		}
+		onSubmit(cleaned)
 		navigation.goBack()
 	}
 
@@ -133,7 +139,7 @@ export function ComponentFormScreen({
 					value={draft.name}
 					onChangeText={(name) => setDraft((d) => ({ ...d, name }))}
 					placeholder="e.g. Sauce, Dough"
-					placeholderTextColor="#999"
+					placeholderTextColor={colors.textPlaceholder}
 				/>
 			</Field>
 
@@ -146,7 +152,7 @@ export function ComponentFormScreen({
 						}
 						onChangeText={(t) => updateNumber("prep_time", t)}
 						placeholder="0"
-						placeholderTextColor="#999"
+						placeholderTextColor={colors.textPlaceholder}
 						keyboardType="number-pad"
 					/>
 				</Field>
@@ -158,7 +164,7 @@ export function ComponentFormScreen({
 						}
 						onChangeText={(t) => updateNumber("cook_time", t)}
 						placeholder="0"
-						placeholderTextColor="#999"
+						placeholderTextColor={colors.textPlaceholder}
 						keyboardType="number-pad"
 					/>
 				</Field>
@@ -195,7 +201,7 @@ export function ComponentFormScreen({
 						onChangeText={setEquipmentDraft}
 						onSubmitEditing={addEquipment}
 						placeholder="Add equipment"
-						placeholderTextColor="#999"
+						placeholderTextColor={colors.textPlaceholder}
 						returnKeyType="done"
 						blurOnSubmit={false}
 					/>
@@ -216,7 +222,7 @@ export function ComponentFormScreen({
 						setDraft((d) => ({ ...d, directions }))
 					}
 					placeholder="Step-by-step instructions"
-					placeholderTextColor="#999"
+					placeholderTextColor={colors.textPlaceholder}
 					multiline
 					textAlignVertical="top"
 				/>
@@ -245,37 +251,34 @@ function Field({
 const styles = StyleSheet.create({
 	container: {
 		flex: 1,
-		backgroundColor: "#fff",
+		backgroundColor: colors.surface,
 		padding: 16
 	},
 	headerButton: {
 		paddingHorizontal: 8
 	},
 	headerButtonText: {
-		fontSize: 16,
-		color: "#3b82f6",
-		fontWeight: "600"
+		fontSize: fontSize.input,
+		color: colors.primary,
+		fontWeight: fontWeight.semibold
 	},
 	field: {
 		marginBottom: 20
 	},
 	fieldLabel: {
-		fontSize: 12,
-		fontWeight: "700",
-		color: "#666",
-		textTransform: "uppercase",
-		letterSpacing: 0.5,
+		...typography.sectionHeader,
+		color: colors.textMuted,
 		marginBottom: 6
 	},
 	input: {
 		borderWidth: 1,
-		borderColor: "#ddd",
+		borderColor: colors.borderStrong,
 		borderRadius: 8,
 		paddingHorizontal: 12,
 		paddingVertical: 10,
-		fontSize: 16,
-		color: "#222",
-		backgroundColor: "#fff"
+		fontSize: fontSize.input,
+		color: colors.textBody,
+		backgroundColor: colors.surface
 	},
 	timingRow: {
 		flexDirection: "row",
@@ -303,24 +306,24 @@ const styles = StyleSheet.create({
 	equipmentAddBtn: {
 		paddingHorizontal: 14,
 		paddingVertical: 10,
-		backgroundColor: "#3b82f6",
+		backgroundColor: colors.primary,
 		borderRadius: 8
 	},
 	equipmentAddBtnText: {
-		color: "#fff",
-		fontWeight: "600"
+		color: colors.primaryOn,
+		fontWeight: fontWeight.semibold
 	},
 	addButton: {
 		padding: 12,
 		borderRadius: 8,
 		borderWidth: 1,
-		borderColor: "#3b82f6",
+		borderColor: colors.primary,
 		borderStyle: "dashed",
 		alignItems: "center",
 		marginTop: 8
 	},
 	addButtonText: {
-		color: "#3b82f6",
-		fontWeight: "600"
+		color: colors.primary,
+		fontWeight: fontWeight.semibold
 	}
 })

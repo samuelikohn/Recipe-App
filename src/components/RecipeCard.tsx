@@ -1,5 +1,7 @@
 import { Image, Pressable, StyleSheet, Text, View } from "react-native"
 import { RecipeSummary } from "../models/types"
+import { colors } from "../theme/colors"
+import { fontSize, fontWeight } from "../theme/typography"
 import { TagChip } from "./TagChip"
 
 type Props = {
@@ -57,13 +59,13 @@ export function RecipeCard({ recipe, onPress }: Props) {
 const styles = StyleSheet.create({
 	card: {
 		flexDirection: "row",
-		backgroundColor: "#fff",
+		backgroundColor: colors.surface,
 		borderRadius: 12,
 		marginHorizontal: 12,
 		marginVertical: 6,
 		overflow: "hidden",
 		borderWidth: 1,
-		borderColor: "#eee"
+		borderColor: colors.border
 	},
 	pressed: {
 		opacity: 0.7
@@ -73,13 +75,13 @@ const styles = StyleSheet.create({
 		height: 96
 	},
 	placeholder: {
-		backgroundColor: "#f0f0f0",
+		backgroundColor: colors.surfaceMuted,
 		alignItems: "center",
 		justifyContent: "center"
 	},
 	placeholderText: {
-		fontSize: 11,
-		color: "#999"
+		fontSize: fontSize.fine,
+		color: colors.textPlaceholder
 	},
 	body: {
 		flex: 1,
@@ -87,14 +89,14 @@ const styles = StyleSheet.create({
 		justifyContent: "center"
 	},
 	name: {
-		fontSize: 16,
-		fontWeight: "700",
-		color: "#222"
+		fontSize: fontSize.input,
+		fontWeight: fontWeight.bold,
+		color: colors.textBody
 	},
 	servings: {
 		marginTop: 2,
-		fontSize: 12,
-		color: "#666"
+		fontSize: fontSize.meta,
+		color: colors.textMuted
 	},
 	tagRow: {
 		flexDirection: "row",
@@ -103,8 +105,8 @@ const styles = StyleSheet.create({
 		marginTop: 6
 	},
 	moreTags: {
-		fontSize: 12,
-		color: "#666",
+		fontSize: fontSize.meta,
+		color: colors.textMuted,
 		marginLeft: 2
 	}
 })

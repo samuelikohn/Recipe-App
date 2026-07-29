@@ -1,4 +1,6 @@
 import { Pressable, StyleSheet, Text, View } from "react-native"
+import { colors } from "../theme/colors"
+import { fontSize } from "../theme/typography"
 
 type Props = {
 	label: string
@@ -29,22 +31,22 @@ const styles = StyleSheet.create({
 		alignItems: "center",
 		paddingHorizontal: 10,
 		paddingVertical: 4,
-		backgroundColor: "#fef3c7",
+		backgroundColor: colors.equipmentBg,
 		borderRadius: 6,
 		borderWidth: 1,
-		borderColor: "#f59e0b",
+		borderColor: colors.equipmentBorder,
 		marginRight: 6,
 		marginBottom: 6
 	},
 	label: {
-		fontSize: 12,
-		color: "#78350f"
+		fontSize: fontSize.meta,
+		color: colors.equipmentText
 	},
 	remove: {
 		marginLeft: 6
 	},
 	removeText: {
-		fontSize: 12,
-		color: "#78350f"
+		fontSize: fontSize.meta,
+		color: colors.equipmentText
 	}
 })

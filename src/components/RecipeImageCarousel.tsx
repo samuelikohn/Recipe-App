@@ -9,6 +9,8 @@ import {
 	Text,
 	View
 } from "react-native"
+import { colors } from "../theme/colors"
+import { fontSize } from "../theme/typography"
 
 type Props = {
 	images: string[]
@@ -63,13 +65,13 @@ const styles = StyleSheet.create({
 		position: "absolute",
 		bottom: 8,
 		right: 8,
-		backgroundColor: "rgba(0,0,0,0.5)",
+		backgroundColor: colors.overlay,
 		borderRadius: 10,
 		paddingHorizontal: 8,
 		paddingVertical: 2
 	},
 	counterText: {
-		color: "#fff",
-		fontSize: 12
+		color: colors.textInverse,
+		fontSize: fontSize.meta
 	}
 })

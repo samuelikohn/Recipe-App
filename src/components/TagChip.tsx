@@ -1,4 +1,6 @@
 import { Pressable, StyleSheet, Text, View } from "react-native"
+import { colors } from "../theme/colors"
+import { fontSize } from "../theme/typography"
 
 type Props = {
 	label: string
@@ -47,26 +49,26 @@ const styles = StyleSheet.create({
 		alignItems: "center",
 		paddingHorizontal: 10,
 		paddingVertical: 4,
-		backgroundColor: "#eee",
+		backgroundColor: colors.border,
 		borderRadius: 12,
 		marginRight: 6,
 		marginBottom: 6
 	},
 	chipSelected: {
-		backgroundColor: "#3b82f6"
+		backgroundColor: colors.primary
 	},
 	label: {
-		fontSize: 12,
-		color: "#333"
+		fontSize: fontSize.meta,
+		color: colors.textDefault
 	},
 	labelSelected: {
-		color: "#fff"
+		color: colors.primaryOn
 	},
 	remove: {
 		marginLeft: 6
 	},
 	removeText: {
-		fontSize: 12,
-		color: "#666"
+		fontSize: fontSize.meta,
+		color: colors.textMuted
 	}
 })

@@ -1,4 +1,6 @@
 import { StyleSheet, Text, View } from "react-native"
+import { colors } from "../theme/colors"
+import { fontSize, fontWeight } from "../theme/typography"
 
 type Props = {
 	title: string
@@ -22,15 +24,15 @@ const styles = StyleSheet.create({
 		padding: 32
 	},
 	title: {
-		fontSize: 18,
-		fontWeight: "600",
-		color: "#333",
+		fontSize: fontSize.componentTitle,
+		fontWeight: fontWeight.semibold,
+		color: colors.textDefault,
 		textAlign: "center"
 	},
 	subtitle: {
 		marginTop: 8,
-		fontSize: 14,
-		color: "#777",
+		fontSize: fontSize.body,
+		color: colors.textFaint,
 		textAlign: "center"
 	}
 })
