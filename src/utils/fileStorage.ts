@@ -1,20 +1,23 @@
-// Uses the class-based expo-file-system API (Directory / File / Paths).
-// In expo-file-system v18 (the version shipped with Expo SDK 53) these
-// classes live at `expo-file-system/next` — the main entry still only
-// exports the legacy `documentDirectory`, `getInfoAsync`, etc.  In a
-// later major release the classes were promoted to the main export;
-// when this project upgrades past that boundary, drop the `/next`
-// subpath below. Getting this wrong crashes on import with
-// "Cannot read property 'document' of undefined" because `Paths` is
-// undefined and this module reads `Paths.document` at top level.
+// Uses the legacy function-style expo-file-system API rather than the
+// class-based Paths/Directory/File one. Reason: the class API in
+// expo-file-system v18 (Expo SDK 53) lives at `expo-file-system/next`
+// and depends on a JSI-installed `ExpoFileSystem` native module that
+// Expo Go SDK 53 does NOT ship — importing it crashes at module load
+// with "Cannot read property 'uri' of undefined" the first time any
+// Directory/File is constructed. Once this project moves to a dev
+// client (or a future SDK where the class API is stable in the main
+// entry), this file can be rewritten to use it.
 
-import { Directory, File, Paths } from "expo-file-system/next"
+import * as FileSystem from "expo-file-system"
 
-const imagesDirectory = new Directory(Paths.document, "images")
+const imagesDirectory = FileSystem.documentDirectory + "images/"
 
 async function ensureImagesDirExists(): Promise<void> {
-	if (!imagesDirectory.exists) {
-		imagesDirectory.create()
+	const info = await FileSystem.getInfoAsync(imagesDirectory)
+	if (!info.exists) {
+		await FileSystem.makeDirectoryAsync(imagesDirectory, {
+			intermediates: true
+		})
 	}
 }
 
@@ -33,11 +36,10 @@ export async function persistPickedImage(sourceUri: string): Promise<string> {
 	const extension = extensionMatch ? extensionMatch[0] : ".jpg"
 	const filename = `${Date.now()}-${Math.round(Math.random() * 1e9)}${extension}`
 
-	const sourceFile = new File(sourceUri)
-	const destinationFile = new File(imagesDirectory, filename)
-	await sourceFile.copy(destinationFile)
+	const destinationUri = imagesDirectory + filename
+	await FileSystem.copyAsync({ from: sourceUri, to: destinationUri })
 
-	return destinationFile.uri
+	return destinationUri
 }
 
 /**
@@ -46,12 +48,5 @@ export async function persistPickedImage(sourceUri: string): Promise<string> {
  * alongside any image/recipe delete to avoid leaking files.
  */
 export async function deleteImageFile(filepath: string): Promise<void> {
-	try {
-		const file = new File(filepath)
-		if (file.exists) {
-			file.delete()
-		}
-	} catch {
-		// Equivalent to the old { idempotent: true } — ignore if it's already gone.
-	}
+	await FileSystem.deleteAsync(filepath, { idempotent: true })
 }
