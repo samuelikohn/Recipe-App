@@ -1,6 +1,3 @@
-// PRAGMA foreign_keys = ON;
-// PRAGMA recursive_triggers = ON;
-
 export const SQL_SCHEMA = `
 CREATE TABLE IF NOT EXISTS recipes (
     id           INTEGER PRIMARY KEY AUTOINCREMENT,
