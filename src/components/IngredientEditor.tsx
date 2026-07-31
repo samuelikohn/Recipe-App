@@ -32,7 +32,8 @@ export function IngredientEditor({ ingredient, onChange, onRemove }: Props) {
 				cleaned.slice(firstDot + 1).replace(/\./g, "")
 		}
 		setAmountText(cleaned)
-		const value = cleaned === "" || cleaned === "." ? 0 : parseFloat(cleaned)
+		const value =
+			cleaned === "" || cleaned === "." ? 0 : parseFloat(cleaned)
 		onChange({
 			...ingredient,
 			amount: Number.isFinite(value) && value > 0 ? value : 0
