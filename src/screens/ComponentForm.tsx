@@ -8,12 +8,14 @@ import {
 	TextInput,
 	View
 } from "react-native"
+import { DirectionsEditor } from "../components/DirectionsEditor"
 import { EquipmentChip } from "../components/EquipmentChip"
 import { IngredientEditor } from "../components/IngredientEditor"
 import { Component, Ingredient } from "../models/types"
 import { ScreenProps } from "../navigation/types"
 import { colors } from "../theme/colors"
 import { fontSize, fontWeight, typography } from "../theme/typography"
+import { joinDirectionSteps, splitDirectionSteps } from "../utils/directions"
 import { validateComponent } from "../utils/validation"
 
 const EMPTY_COMPONENT: Component = {
@@ -68,7 +70,17 @@ export function ComponentFormScreen({
 		const cleanedIngredients = draft.ingredients
 			.map((i) => ({ ...i, name: i.name.trim() }))
 			.filter((i) => i.name.length > 0)
-		const cleaned = { ...draft, name, ingredients: cleanedIngredients }
+		const cleanedDirections = joinDirectionSteps(
+			splitDirectionSteps(draft.directions)
+				.map((step) => step.trim())
+				.filter((step) => step.length > 0)
+		)
+		const cleaned = {
+			...draft,
+			name,
+			ingredients: cleanedIngredients,
+			directions: cleanedDirections
+		}
 
 		const check = validateComponent(cleaned)
 		if (!check.ok) {
@@ -215,16 +227,11 @@ export function ComponentFormScreen({
 			</Field>
 
 			<Field label="Directions">
-				<TextInput
-					style={[styles.input, styles.directionsInput]}
-					value={draft.directions}
-					onChangeText={(directions) =>
+				<DirectionsEditor
+					directions={draft.directions}
+					onChange={(directions) =>
 						setDraft((d) => ({ ...d, directions }))
 					}
-					placeholder="Step-by-step instructions"
-					placeholderTextColor={colors.textPlaceholder}
-					multiline
-					textAlignVertical="top"
 				/>
 			</Field>
 		</ScrollView>
@@ -286,9 +293,6 @@ const styles = StyleSheet.create({
 	},
 	timingField: {
 		flex: 1
-	},
-	directionsInput: {
-		minHeight: 120
 	},
 	equipmentRow: {
 		flexDirection: "row",
