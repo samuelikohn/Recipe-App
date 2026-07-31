@@ -1,3 +1,4 @@
+import { useState } from "react"
 import { Pressable, StyleSheet, Text, TextInput, View } from "react-native"
 import { Ingredient } from "../models/types"
 import { colors } from "../theme/colors"
@@ -15,12 +16,26 @@ type Props = {
  * component-draft array is the single source of truth.
  */
 export function IngredientEditor({ ingredient, onChange, onRemove }: Props) {
+	// Amount is tracked as raw text locally so a trailing "." or "1.50"
+	// isn't collapsed back to "1" (via amount.toString()) mid-keystroke,
+	// which previously made it impossible to type decimal values at all.
+	const [amountText, setAmountText] = useState(
+		ingredient.amount ? ingredient.amount.toString() : ""
+	)
+
 	function updateAmount(text: string) {
-		const cleaned = text.replace(/[^0-9.]/g, "")
-		const value = cleaned === "" ? 0 : parseFloat(cleaned)
+		let cleaned = text.replace(/[^0-9.]/g, "")
+		const firstDot = cleaned.indexOf(".")
+		if (firstDot !== -1) {
+			cleaned =
+				cleaned.slice(0, firstDot + 1) +
+				cleaned.slice(firstDot + 1).replace(/\./g, "")
+		}
+		setAmountText(cleaned)
+		const value = cleaned === "" || cleaned === "." ? 0 : parseFloat(cleaned)
 		onChange({
 			...ingredient,
-			amount: Number.isFinite(value) ? value : 0
+			amount: Number.isFinite(value) && value > 0 ? value : 0
 		})
 	}
 
@@ -46,9 +61,7 @@ export function IngredientEditor({ ingredient, onChange, onRemove }: Props) {
 			<View style={styles.row}>
 				<TextInput
 					style={[styles.input, styles.amount]}
-					value={
-						ingredient.amount ? ingredient.amount.toString() : ""
-					}
+					value={amountText}
 					onChangeText={updateAmount}
 					placeholder="Amount"
 					placeholderTextColor={colors.textPlaceholder}
