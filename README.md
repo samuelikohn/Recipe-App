@@ -1,4 +1,5 @@
-allow further scrolling down, auto scroll to above keyboard
+allow further scrolling down - CHECK
+auto scroll to above keyboard - CHECK
 confirm on exit edit page w/o saving - CHECK
 resize images again
 add client validation for entry fields?

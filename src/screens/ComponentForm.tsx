@@ -2,7 +2,6 @@ import { useEffect, useLayoutEffect, useRef, useState } from "react"
 import {
 	Alert,
 	Pressable,
-	ScrollView,
 	StyleSheet,
 	Text,
 	TextInput,
@@ -12,6 +11,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context"
 import { DirectionsEditor } from "../components/DirectionsEditor"
 import { EquipmentChip } from "../components/EquipmentChip"
 import { IngredientEditor } from "../components/IngredientEditor"
+import { KeyboardAwareScrollView } from "../components/KeyboardAwareScrollView"
 import { Component, Ingredient } from "../models/types"
 import { ScreenProps } from "../navigation/types"
 import { colors } from "../theme/colors"
@@ -174,7 +174,7 @@ export function ComponentFormScreen({
 	}
 
 	return (
-		<ScrollView
+		<KeyboardAwareScrollView
 			style={styles.container}
 			contentContainerStyle={[
 				styles.content,
@@ -271,7 +271,7 @@ export function ComponentFormScreen({
 					}
 				/>
 			</Field>
-		</ScrollView>
+		</KeyboardAwareScrollView>
 	)
 }
 

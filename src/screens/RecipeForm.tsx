@@ -2,7 +2,6 @@ import { useEffect, useLayoutEffect, useRef, useState } from "react"
 import {
 	Alert,
 	Pressable,
-	ScrollView,
 	StyleSheet,
 	Text,
 	TextInput,
@@ -12,6 +11,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context"
 import { DirectionsEditor } from "../components/DirectionsEditor"
 import { EmptyState } from "../components/EmptyState"
 import { ImagePickerGrid } from "../components/ImagePickerGrid"
+import { KeyboardAwareScrollView } from "../components/KeyboardAwareScrollView"
 import { TagInput } from "../components/TagInput"
 import { useRecipe } from "../hooks/useRecipe"
 import { RecipeDraft, ScreenProps } from "../navigation/types"
@@ -179,7 +179,7 @@ export function RecipeFormScreen({
 	}
 
 	return (
-		<ScrollView
+		<KeyboardAwareScrollView
 			style={styles.container}
 			contentContainerStyle={[
 				styles.content,
@@ -264,7 +264,7 @@ export function RecipeFormScreen({
 					<Text style={styles.addButtonText}>+ Add component</Text>
 				</Pressable>
 			</Field>
-		</ScrollView>
+		</KeyboardAwareScrollView>
 	)
 }
 
