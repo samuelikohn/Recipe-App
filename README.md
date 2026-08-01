@@ -1,5 +1,5 @@
 allow further scrolling down, auto scroll to above keyboard
-confirm on exit edit page w/o saving
+confirm on exit edit page w/o saving - CHECK
 resize images again
 add client validation for entry fields?
 no auto capital on prep and units fields - CHECK

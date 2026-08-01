@@ -1,4 +1,4 @@
-import { useLayoutEffect, useState } from "react"
+import { useEffect, useLayoutEffect, useRef, useState } from "react"
 import {
 	Alert,
 	Pressable,
@@ -48,7 +48,12 @@ export function ComponentFormScreen({
 }: ScreenProps<"ComponentForm">) {
 	const { initial, onSubmit } = route.params
 	const [draft, setDraft] = useState<Component>(initial ?? EMPTY_COMPONENT)
+	const [initialDraft] = useState<Component>(initial ?? EMPTY_COMPONENT)
 	const [equipmentDraft, setEquipmentDraft] = useState("")
+	const allowNavigationRef = useRef(false)
+	const hasUnsavedChanges =
+		JSON.stringify(draft) !== JSON.stringify(initialDraft) ||
+		equipmentDraft.length > 0
 
 	useLayoutEffect(() => {
 		navigation.setOptions({
@@ -64,6 +69,31 @@ export function ComponentFormScreen({
 			)
 		})
 	})
+
+	useEffect(() => {
+		const unsubscribe = navigation.addListener("beforeRemove", (event) => {
+			if (allowNavigationRef.current || !hasUnsavedChanges) return
+
+			event.preventDefault()
+			Alert.alert(
+				"Discard changes?",
+				"You have unsaved component changes. Discard them and leave this screen?",
+				[
+					{ text: "Keep editing", style: "cancel" },
+					{
+						text: "Discard",
+						style: "destructive",
+						onPress: () => {
+							allowNavigationRef.current = true
+							navigation.dispatch(event.data.action)
+						}
+					}
+				]
+			)
+		})
+
+		return unsubscribe
+	}, [navigation, hasUnsavedChanges])
 
 	function onDone() {
 		const name = draft.name.trim()
@@ -87,6 +117,7 @@ export function ComponentFormScreen({
 			Alert.alert(check.message)
 			return
 		}
+		allowNavigationRef.current = true
 		onSubmit(cleaned)
 		navigation.goBack()
 	}

@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useState } from "react"
+import { useEffect, useLayoutEffect, useRef, useState } from "react"
 import {
 	Alert,
 	Pressable,
@@ -42,22 +42,54 @@ export function RecipeFormScreen({
 	const editingName = route.params?.name
 	const { recipe, loading } = useRecipe(editingName)
 	const [draft, setDraft] = useState<RecipeDraft>(EMPTY_DRAFT)
+	const [initialDraft, setInitialDraft] = useState<RecipeDraft>(EMPTY_DRAFT)
 	const [initialized, setInitialized] = useState(false)
 	const [saving, setSaving] = useState(false)
+	const allowNavigationRef = useRef(false)
+	const hasUnsavedChanges =
+		initialized &&
+		JSON.stringify(draft) !== JSON.stringify(initialDraft)
 
 	// Hydrate from the fetched recipe once when editing. We only do this on
 	// the first successful load so the user's in-progress edits aren't
 	// blown away by a background refetch triggered by useDbChangeSignal.
 	useEffect(() => {
 		if (!editingName) {
+			setInitialDraft(EMPTY_DRAFT)
 			setInitialized(true)
 			return
 		}
 		if (!initialized && recipe) {
 			setDraft(recipe)
+			setInitialDraft(recipe)
 			setInitialized(true)
 		}
 	}, [editingName, recipe, initialized])
+
+	useEffect(() => {
+		const unsubscribe = navigation.addListener("beforeRemove", (event) => {
+			if (allowNavigationRef.current || !hasUnsavedChanges) return
+
+			event.preventDefault()
+			Alert.alert(
+				"Discard changes?",
+				"You have unsaved recipe changes. Discard them and leave this screen?",
+				[
+					{ text: "Keep editing", style: "cancel" },
+					{
+						text: "Discard",
+						style: "destructive",
+						onPress: () => {
+							allowNavigationRef.current = true
+							navigation.dispatch(event.data.action)
+						}
+					}
+				]
+			)
+		})
+
+		return unsubscribe
+	}, [navigation, hasUnsavedChanges])
 
 	useLayoutEffect(() => {
 		navigation.setOptions({
@@ -99,6 +131,7 @@ export function RecipeFormScreen({
 			} else {
 				await createRecipe(toPersist)
 			}
+			allowNavigationRef.current = true
 			navigation.goBack()
 		} catch (err) {
 			Alert.alert(
