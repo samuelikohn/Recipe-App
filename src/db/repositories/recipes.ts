@@ -72,9 +72,10 @@ export async function getRecipeByName(name: string): Promise<Recipe | null> {
 		name: string
 		num_servings: number
 		directions: string
-	}>(`SELECT id, name, num_servings, directions FROM recipes WHERE name = ?;`, [
-		name
-	])
+	}>(
+		`SELECT id, name, num_servings, directions FROM recipes WHERE name = ?;`,
+		[name]
+	)
 	if (!recipeRow) return null
 
 	return hydrateRecipe(db, recipeRow)
@@ -211,7 +212,10 @@ async function hydrateRecipe(
 			unit: string
 			prep: string
 		}>(
-			`SELECT ingredient, amount, unit, prep FROM component_ingredients WHERE component_id = ?;`,
+			// rowid order == the order the user arranged the lines in the
+			// form; two entries for the same ingredient differ only by prep
+			// and by where they sit in the list.
+			`SELECT ingredient, amount, unit, prep FROM component_ingredients WHERE component_id = ? ORDER BY rowid;`,
 			[c.id]
 		)
 

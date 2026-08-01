@@ -1,5 +1,5 @@
 import { StyleSheet, Text, View } from "react-native"
-import { Component } from "../models/types"
+import { Component, ingredientKey } from "../models/types"
 import { colors } from "../theme/colors"
 import { fontSize, typography } from "../theme/typography"
 import { splitDirectionSteps } from "../utils/directions"
@@ -40,7 +40,7 @@ export function ComponentSection({ component, servingsMultiplier = 1 }: Props) {
 					<Text style={styles.sectionHeader}>Ingredients</Text>
 					{component.ingredients.map((ingredient) => (
 						<IngredientRow
-							key={ingredient.name}
+							key={ingredientKey(ingredient)}
 							ingredient={ingredient}
 							servingsMultiplier={servingsMultiplier}
 						/>

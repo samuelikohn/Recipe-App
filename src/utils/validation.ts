@@ -1,4 +1,4 @@
-import { Component, Recipe } from "../models/types"
+import { Component, Recipe, ingredientKey } from "../models/types"
 
 /**
  * `{ ok: true }` on success, `{ ok: false, message }` on the first
@@ -39,6 +39,10 @@ export function validateRecipe(
  * Rules a Component draft must satisfy on Done from ComponentFormScreen.
  * Ingredients with a blank name are ignored — they're just empty rows the
  * user added and didn't fill in, and the form filters them out on submit.
+ *
+ * Repeating an ingredient is allowed as long as the prep differs (see the
+ * Ingredient docs); repeating it with the same prep is not, since the two
+ * lines belong together as one amount and the database key would reject it.
  */
 export function validateComponent(
 	component: Pick<
@@ -52,6 +56,7 @@ export function validateComponent(
 	if (component.prep_time < 0 || component.cook_time < 0) {
 		return { ok: false, message: "Times cannot be negative" }
 	}
+	const seen = new Set<string>()
 	for (const ingredient of component.ingredients) {
 		if (ingredient.name.trim().length === 0) continue
 		if (!Number.isFinite(ingredient.amount) || ingredient.amount < 0) {
@@ -60,6 +65,16 @@ export function validateComponent(
 				message: `Ingredient "${ingredient.name}" has an invalid amount`
 			}
 		}
+		const key = ingredientKey(ingredient)
+		if (seen.has(key)) {
+			return {
+				ok: false,
+				message: ingredient.prep.trim()
+					? `Ingredient "${ingredient.name}" is listed twice with the same prep ("${ingredient.prep.trim()}") — combine them or give them different prep`
+					: `Ingredient "${ingredient.name}" is listed twice — combine them or give them different prep`
+			}
+		}
+		seen.add(key)
 	}
 	return { ok: true }
 }

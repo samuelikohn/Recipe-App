@@ -35,13 +35,18 @@ CREATE TABLE IF NOT EXISTS ingredients (
     name TEXT PRIMARY KEY NOT NULL
 );
 
+-- A component may list the same ingredient more than once as long as the
+-- prep differs (e.g. "1 onion, diced" for the sauce plus "1 onion, sliced"
+-- for the garnish), so prep is part of the key. Two rows with the same
+-- ingredient AND the same prep are still rejected — that's a duplicate the
+-- user meant to enter as a single larger amount.
 CREATE TABLE IF NOT EXISTS component_ingredients (
     component_id INTEGER NOT NULL REFERENCES components(id) ON DELETE CASCADE,
     ingredient   TEXT NOT NULL REFERENCES ingredients(name) ON DELETE CASCADE,
     amount       REAL NOT NULL,
     unit         TEXT NOT NULL,
     prep         TEXT NOT NULL,
-    PRIMARY KEY (component_id, ingredient)
+    PRIMARY KEY (component_id, ingredient, prep)
 );
 
 CREATE TABLE IF NOT EXISTS equipment (

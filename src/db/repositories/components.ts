@@ -30,7 +30,10 @@ export async function getComponentById(id: number): Promise<Component | null> {
 		unit: string
 		prep: string
 	}>(
-		`SELECT ingredient, amount, unit, prep FROM component_ingredients WHERE component_id = ?;`,
+		// rowid order == the order the user arranged the lines in the form,
+		// which is the only thing distinguishing two entries for the same
+		// ingredient beyond their prep.
+		`SELECT ingredient, amount, unit, prep FROM component_ingredients WHERE component_id = ? ORDER BY rowid;`,
 		[id]
 	)
 
