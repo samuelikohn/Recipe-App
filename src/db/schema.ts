@@ -3,7 +3,9 @@ CREATE TABLE IF NOT EXISTS recipes (
     id           INTEGER PRIMARY KEY AUTOINCREMENT,
     name         TEXT NOT NULL UNIQUE,
     num_servings INTEGER NOT NULL,
-    directions   TEXT NOT NULL DEFAULT ''
+    directions   TEXT NOT NULL DEFAULT '',
+    prep_time    INTEGER NOT NULL DEFAULT 0,
+    cook_time    INTEGER NOT NULL DEFAULT 0
 );
 
 CREATE TABLE IF NOT EXISTS images (
@@ -47,6 +49,15 @@ CREATE TABLE IF NOT EXISTS component_ingredients (
     unit         TEXT NOT NULL,
     prep         TEXT NOT NULL,
     PRIMARY KEY (component_id, ingredient, prep)
+);
+
+CREATE TABLE IF NOT EXISTS recipe_ingredients (
+    recipe_id  INTEGER NOT NULL REFERENCES recipes(id) ON DELETE CASCADE,
+    ingredient TEXT NOT NULL REFERENCES ingredients(name) ON DELETE CASCADE,
+    amount     REAL NOT NULL,
+    unit       TEXT NOT NULL,
+    prep       TEXT NOT NULL,
+    PRIMARY KEY (recipe_id, ingredient, prep)
 );
 
 CREATE TABLE IF NOT EXISTS equipment (

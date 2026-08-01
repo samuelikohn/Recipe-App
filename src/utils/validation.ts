@@ -1,4 +1,4 @@
-import { Component, Recipe, ingredientKey } from "../models/types"
+import { Component, Ingredient, Recipe, ingredientKey } from "../models/types"
 
 /**
  * `{ ok: true }` on success, `{ ok: false, message }` on the first
@@ -15,7 +15,15 @@ export type ValidationResult = { ok: true } | { ok: false; message: string }
  * surface component-level problems too.
  */
 export function validateRecipe(
-	recipe: Pick<Recipe, "name" | "num_servings" | "components">
+	recipe: Pick<
+		Recipe,
+		| "name"
+		| "num_servings"
+		| "prep_time"
+		| "cook_time"
+		| "ingredients"
+		| "components"
+	>
 ): ValidationResult {
 	if (recipe.name.trim().length === 0) {
 		return { ok: false, message: "Name is required" }
@@ -23,6 +31,12 @@ export function validateRecipe(
 	if (!Number.isFinite(recipe.num_servings) || recipe.num_servings < 1) {
 		return { ok: false, message: "Servings must be at least 1" }
 	}
+	if (recipe.prep_time < 0 || recipe.cook_time < 0) {
+		return { ok: false, message: "Times cannot be negative" }
+	}
+	const recipeIngredientCheck = validateIngredients(recipe.ingredients)
+	if (!recipeIngredientCheck.ok) return recipeIngredientCheck
+
 	for (let i = 0; i < recipe.components.length; i++) {
 		const check = validateComponent(recipe.components[i])
 		if (!check.ok) {
@@ -56,8 +70,12 @@ export function validateComponent(
 	if (component.prep_time < 0 || component.cook_time < 0) {
 		return { ok: false, message: "Times cannot be negative" }
 	}
+	return validateIngredients(component.ingredients)
+}
+
+function validateIngredients(ingredients: Ingredient[]): ValidationResult {
 	const seen = new Set<string>()
-	for (const ingredient of component.ingredients) {
+	for (const ingredient of ingredients) {
 		if (ingredient.name.trim().length === 0) continue
 		if (!Number.isFinite(ingredient.amount) || ingredient.amount < 0) {
 			return {

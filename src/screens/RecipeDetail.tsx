@@ -12,15 +12,18 @@ import { useSafeAreaInsets } from "react-native-safe-area-context"
 import { ComponentSection } from "../components/ComponentSection"
 import { DirectionsList } from "../components/DirectionsList"
 import { EmptyState } from "../components/EmptyState"
+import { IngredientRow } from "../components/IngredientRow"
 import { RecipeImageCarousel } from "../components/RecipeImageCarousel"
 import { TagChip } from "../components/TagChip"
 import { useRecipe } from "../hooks/useRecipe"
+import { ingredientKey } from "../models/types"
 import { ScreenProps } from "../navigation/types"
 import { colors } from "../theme/colors"
 import { fontSize, fontWeight, typography } from "../theme/typography"
 import { splitDirectionSteps } from "../utils/directions"
 import { deleteRecipe } from "../db/repositories/recipes"
 import { deleteImageFile } from "../utils/fileStorage"
+import { formatDuration } from "../utils/format"
 
 export function RecipeDetailScreen({
 	route,
@@ -65,6 +68,7 @@ export function RecipeDetailScreen({
 
 	const currentServings = servings ?? recipe.num_servings
 	const multiplier = currentServings / recipe.num_servings
+	const totalTime = recipe.prep_time + recipe.cook_time
 	const hasDirections =
 		splitDirectionSteps(recipe.directions).filter(
 			(step) => step.trim().length > 0
@@ -142,7 +146,28 @@ export function RecipeDetailScreen({
 						))}
 					</View>
 				) : null}
+
+				{totalTime > 0 ? (
+					<Text style={styles.timing}>
+						Prep {formatDuration(recipe.prep_time)} - Cook{" "}
+						{formatDuration(recipe.cook_time)} - Total{" "}
+						{formatDuration(totalTime)}
+					</Text>
+				) : null}
 			</View>
+
+			{recipe.ingredients.length > 0 ? (
+				<View style={styles.section}>
+					<Text style={styles.sectionHeader}>Ingredients</Text>
+					{recipe.ingredients.map((ingredient) => (
+						<IngredientRow
+							key={ingredientKey(ingredient)}
+							ingredient={ingredient}
+							servingsMultiplier={multiplier}
+						/>
+					))}
+				</View>
+			) : null}
 
 			{hasDirections ? (
 				<View style={styles.section}>
@@ -233,6 +258,11 @@ const styles = StyleSheet.create({
 		flexDirection: "row",
 		flexWrap: "wrap",
 		marginTop: 12
+	},
+	timing: {
+		marginTop: 12,
+		fontSize: fontSize.meta,
+		color: colors.textMuted
 	},
 	section: {
 		paddingHorizontal: 16,

@@ -11,9 +11,11 @@ import { useSafeAreaInsets } from "react-native-safe-area-context"
 import { DirectionsEditor } from "../components/DirectionsEditor"
 import { EmptyState } from "../components/EmptyState"
 import { ImagePickerGrid } from "../components/ImagePickerGrid"
+import { IngredientEditor } from "../components/IngredientEditor"
 import { KeyboardAwareScrollView } from "../components/KeyboardAwareScrollView"
 import { TagInput } from "../components/TagInput"
 import { useRecipe } from "../hooks/useRecipe"
+import { Ingredient } from "../models/types"
 import { RecipeDraft, ScreenProps } from "../navigation/types"
 import { colors } from "../theme/colors"
 import { fontSize, fontWeight, typography } from "../theme/typography"
@@ -25,9 +27,19 @@ const EMPTY_DRAFT: RecipeDraft = {
 	name: "",
 	num_servings: 1,
 	directions: "",
+	prep_time: 0,
+	cook_time: 0,
+	ingredients: [],
 	images: [],
 	components: [],
 	tags: []
+}
+
+const EMPTY_INGREDIENT: Ingredient = {
+	name: "",
+	amount: 0,
+	unit: "",
+	prep: ""
 }
 
 /**
@@ -117,7 +129,16 @@ export function RecipeFormScreen({
 				.map((step) => step.trim())
 				.filter((step) => step.length > 0)
 		)
-		const toPersist = { ...draft, name, directions, id: draft.id ?? 0 }
+		const ingredients = draft.ingredients
+			.map((i) => ({ ...i, name: i.name.trim() }))
+			.filter((i) => i.name.length > 0)
+		const toPersist = {
+			...draft,
+			name,
+			directions,
+			ingredients,
+			id: draft.id ?? 0
+		}
 
 		const check = validateRecipe(toPersist)
 		if (!check.ok) {
@@ -149,6 +170,36 @@ export function RecipeFormScreen({
 		setDraft((d) => ({
 			...d,
 			num_servings: Number.isFinite(parsed) ? parsed : 0
+		}))
+	}
+
+	function updateNumber(field: "prep_time" | "cook_time", text: string) {
+		const parsed = parseInt(text.replace(/[^0-9]/g, ""), 10)
+		setDraft((d) => ({
+			...d,
+			[field]: Number.isFinite(parsed) ? parsed : 0
+		}))
+	}
+
+	function addIngredient() {
+		setDraft((d) => ({
+			...d,
+			ingredients: [...d.ingredients, { ...EMPTY_INGREDIENT }]
+		}))
+	}
+
+	function updateIngredient(index: number, ingredient: Ingredient) {
+		setDraft((d) => {
+			const next = [...d.ingredients]
+			next[index] = ingredient
+			return { ...d, ingredients: next }
+		})
+	}
+
+	function removeIngredient(index: number) {
+		setDraft((d) => ({
+			...d,
+			ingredients: d.ingredients.filter((_, i) => i !== index)
 		}))
 	}
 
@@ -208,6 +259,47 @@ export function RecipeFormScreen({
 					placeholderTextColor={colors.textPlaceholder}
 					keyboardType="number-pad"
 				/>
+			</Field>
+
+			<View style={styles.timingRow}>
+				<Field label="Prep (min)" style={styles.timingField}>
+					<TextInput
+						style={styles.input}
+						value={
+							draft.prep_time ? draft.prep_time.toString() : ""
+						}
+						onChangeText={(t) => updateNumber("prep_time", t)}
+						placeholder="0"
+						placeholderTextColor={colors.textPlaceholder}
+						keyboardType="number-pad"
+					/>
+				</Field>
+				<Field label="Cook (min)" style={styles.timingField}>
+					<TextInput
+						style={styles.input}
+						value={
+							draft.cook_time ? draft.cook_time.toString() : ""
+						}
+						onChangeText={(t) => updateNumber("cook_time", t)}
+						placeholder="0"
+						placeholderTextColor={colors.textPlaceholder}
+						keyboardType="number-pad"
+					/>
+				</Field>
+			</View>
+
+			<Field label="Ingredients">
+				{draft.ingredients.map((ingredient, index) => (
+					<IngredientEditor
+						key={index}
+						ingredient={ingredient}
+						onChange={(next) => updateIngredient(index, next)}
+						onRemove={() => removeIngredient(index)}
+					/>
+				))}
+				<Pressable onPress={addIngredient} style={styles.addButton}>
+					<Text style={styles.addButtonText}>+ Add ingredient</Text>
+				</Pressable>
 			</Field>
 
 			<Field label="Directions">
@@ -270,13 +362,15 @@ export function RecipeFormScreen({
 
 function Field({
 	label,
-	children
+	children,
+	style
 }: {
 	label: string
 	children: React.ReactNode
+	style?: object
 }) {
 	return (
-		<View style={styles.field}>
+		<View style={[styles.field, style]}>
 			<Text style={styles.fieldLabel}>{label}</Text>
 			{children}
 		</View>
@@ -301,6 +395,13 @@ const styles = StyleSheet.create({
 	},
 	field: {
 		marginBottom: 20
+	},
+	timingRow: {
+		flexDirection: "row",
+		gap: 12
+	},
+	timingField: {
+		flex: 1
 	},
 	fieldLabel: {
 		...typography.sectionHeader,

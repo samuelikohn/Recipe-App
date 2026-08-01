@@ -10,6 +10,9 @@ export type Recipe = {
 	name: string
 	num_servings: number
 	directions: string
+	prep_time: number
+	cook_time: number
+	ingredients: Ingredient[]
 	images: string[]
 	components: Component[]
 	tags: string[]

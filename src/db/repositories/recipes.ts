@@ -53,11 +53,12 @@ export async function searchRecipes(query: string): Promise<RecipeSummary[]> {
             (SELECT GROUP_CONCAT(tag, ',') FROM recipe_tags WHERE recipe_id = r.id) AS tags
      FROM recipes r
      LEFT JOIN recipe_tags rt ON rt.recipe_id = r.id
+     LEFT JOIN recipe_ingredients ri ON ri.recipe_id = r.id
      LEFT JOIN components c ON c.recipe_id = r.id
      LEFT JOIN component_ingredients ci ON ci.component_id = c.id
-     WHERE r.name LIKE ? OR rt.tag LIKE ? OR ci.ingredient LIKE ?
+     WHERE r.name LIKE ? OR rt.tag LIKE ? OR ri.ingredient LIKE ? OR ci.ingredient LIKE ?
      ORDER BY r.name COLLATE NOCASE;`,
-		[like, like, like]
+		[like, like, like, like]
 	)
 
 	return rows.map(toSummary)
@@ -72,8 +73,10 @@ export async function getRecipeByName(name: string): Promise<Recipe | null> {
 		name: string
 		num_servings: number
 		directions: string
+		prep_time: number
+		cook_time: number
 	}>(
-		`SELECT id, name, num_servings, directions FROM recipes WHERE name = ?;`,
+		`SELECT id, name, num_servings, directions, prep_time, cook_time FROM recipes WHERE name = ?;`,
 		[name]
 	)
 	if (!recipeRow) return null
@@ -181,6 +184,8 @@ async function hydrateRecipe(
 		name: string
 		num_servings: number
 		directions: string
+		prep_time: number
+		cook_time: number
 	}
 ): Promise<Recipe> {
 	const images = await db.getAllAsync<{ filepath: string }>(
@@ -190,6 +195,16 @@ async function hydrateRecipe(
 
 	const tags = await db.getAllAsync<{ tag: string }>(
 		`SELECT tag FROM recipe_tags WHERE recipe_id = ?;`,
+		[recipeRow.id]
+	)
+
+	const recipeIngredientRows = await db.getAllAsync<{
+		ingredient: string
+		amount: number
+		unit: string
+		prep: string
+	}>(
+		`SELECT ingredient, amount, unit, prep FROM recipe_ingredients WHERE recipe_id = ? ORDER BY rowid;`,
 		[recipeRow.id]
 	)
 
@@ -245,6 +260,14 @@ async function hydrateRecipe(
 		name: recipeRow.name,
 		num_servings: recipeRow.num_servings,
 		directions: recipeRow.directions,
+		prep_time: recipeRow.prep_time,
+		cook_time: recipeRow.cook_time,
+		ingredients: recipeIngredientRows.map((i) => ({
+			name: i.ingredient,
+			amount: i.amount,
+			unit: i.unit,
+			prep: i.prep
+		})),
 		images: images.map((i) => i.filepath),
 		components,
 		tags: tags.map((t) => t.tag)
@@ -253,8 +276,14 @@ async function hydrateRecipe(
 
 async function insertRecipeTree(db: Db, recipe: Recipe): Promise<number> {
 	const recipeResult = await db.runAsync(
-		`INSERT INTO recipes (name, num_servings, directions) VALUES (?, ?, ?);`,
-		[recipe.name, recipe.num_servings, recipe.directions]
+		`INSERT INTO recipes (name, num_servings, directions, prep_time, cook_time) VALUES (?, ?, ?, ?, ?);`,
+		[
+			recipe.name,
+			recipe.num_servings,
+			recipe.directions,
+			recipe.prep_time,
+			recipe.cook_time
+		]
 	)
 	const recipeId = recipeResult.lastInsertRowId
 
@@ -270,6 +299,20 @@ async function insertRecipeTree(db: Db, recipe: Recipe): Promise<number> {
 		await db.runAsync(
 			`INSERT INTO recipe_tags (recipe_id, tag) VALUES (?, ?);`,
 			[recipeId, tag]
+		)
+	}
+
+	for (const ingredient of recipe.ingredients) {
+		await upsertIngredient(db, ingredient.name)
+		await db.runAsync(
+			`INSERT INTO recipe_ingredients (recipe_id, ingredient, amount, unit, prep) VALUES (?, ?, ?, ?, ?);`,
+			[
+				recipeId,
+				ingredient.name,
+				ingredient.amount,
+				ingredient.unit,
+				ingredient.prep
+			]
 		)
 	}
 

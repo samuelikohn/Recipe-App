@@ -49,6 +49,18 @@ async function migrateSchema(db: SQLite.SQLiteDatabase): Promise<void> {
 			"ALTER TABLE recipes ADD COLUMN directions TEXT NOT NULL DEFAULT '';"
 		)
 	}
+	const hasPrepTime = columns.some((c) => c.name === "prep_time")
+	if (!hasPrepTime) {
+		await db.execAsync(
+			"ALTER TABLE recipes ADD COLUMN prep_time INTEGER NOT NULL DEFAULT 0;"
+		)
+	}
+	const hasCookTime = columns.some((c) => c.name === "cook_time")
+	if (!hasCookTime) {
+		await db.execAsync(
+			"ALTER TABLE recipes ADD COLUMN cook_time INTEGER NOT NULL DEFAULT 0;"
+		)
+	}
 
 	await migrateComponentIngredientsKey(db)
 }
