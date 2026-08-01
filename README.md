@@ -4,6 +4,6 @@ confirm on exit edit page w/o saving - CHECK
 resize images again
 add client validation for entry fields?
 no auto capital on prep and units fields - CHECK
-drag to reorder ingredients, directions
+drag to reorder ingredients, directions - CHECK
 garbage collection
 add ingredients, prep/cook time to recipe level - CHECK

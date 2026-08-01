@@ -2,6 +2,7 @@ import { Pressable, StyleSheet, Text, TextInput, View } from "react-native"
 import { colors } from "../theme/colors"
 import { fontSize, fontWeight } from "../theme/typography"
 import { joinDirectionSteps, splitDirectionSteps } from "../utils/directions"
+import { ReorderableList } from "./ReorderableList"
 
 type Props = {
 	directions: string
@@ -9,10 +10,8 @@ type Props = {
 }
 
 /**
- * Numbered-step editor for a Component's directions, shown inside
- * ComponentFormScreen. The underlying data is still a single "\n"-joined
- * TEXT field (see utils/directions) — this component just presents it as
- * one row per step and re-joins on every edit.
+ * Numbered-step editor. The stored value is still a single newline-joined
+ * text field; this component presents it as reorderable step rows.
  */
 export function DirectionsEditor({ directions, onChange }: Props) {
 	const steps = splitDirectionSteps(directions)
@@ -31,28 +30,41 @@ export function DirectionsEditor({ directions, onChange }: Props) {
 		onChange(joinDirectionSteps([...steps, ""]))
 	}
 
+	function reorderStep(fromIndex: number, toIndex: number) {
+		const next = [...steps]
+		const [moved] = next.splice(fromIndex, 1)
+		next.splice(toIndex, 0, moved)
+		onChange(joinDirectionSteps(next))
+	}
+
 	return (
 		<View>
-			{steps.map((step, index) => (
-				<View key={index} style={styles.row}>
-					<Text style={styles.stepNumber}>{index + 1}.</Text>
-					<TextInput
-						style={[styles.input, styles.stepInput]}
-						value={step}
-						onChangeText={(text) => updateStep(index, text)}
-						placeholder={`Step ${index + 1}`}
-						placeholderTextColor={colors.textPlaceholder}
-						multiline
-					/>
-					<Pressable
-						onPress={() => removeStep(index)}
-						hitSlop={8}
-						style={styles.removeButton}
-					>
-						<Text style={styles.removeText}>✕</Text>
-					</Pressable>
-				</View>
-			))}
+			<ReorderableList
+				items={steps}
+				keyExtractor={(_step, index) => `step-${index}`}
+				onReorder={reorderStep}
+				renderItem={({ item: step, index, dragHandle }) => (
+					<View style={styles.row}>
+						{dragHandle}
+						<Text style={styles.stepNumber}>{index + 1}.</Text>
+						<TextInput
+							style={[styles.input, styles.stepInput]}
+							value={step}
+							onChangeText={(text) => updateStep(index, text)}
+							placeholder={`Step ${index + 1}`}
+							placeholderTextColor={colors.textPlaceholder}
+							multiline
+						/>
+						<Pressable
+							onPress={() => removeStep(index)}
+							hitSlop={8}
+							style={styles.removeButton}
+						>
+							<Text style={styles.removeText}>x</Text>
+						</Pressable>
+					</View>
+				)}
+			/>
 			<Pressable onPress={addStep} style={styles.addButton}>
 				<Text style={styles.addButtonText}>+ Add step</Text>
 			</Pressable>

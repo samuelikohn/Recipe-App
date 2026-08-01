@@ -12,6 +12,7 @@ import { DirectionsEditor } from "../components/DirectionsEditor"
 import { EquipmentChip } from "../components/EquipmentChip"
 import { IngredientEditor } from "../components/IngredientEditor"
 import { KeyboardAwareScrollView } from "../components/KeyboardAwareScrollView"
+import { ReorderableList } from "../components/ReorderableList"
 import { Component, Ingredient } from "../models/types"
 import { ScreenProps } from "../navigation/types"
 import { colors } from "../theme/colors"
@@ -53,6 +54,8 @@ export function ComponentFormScreen({
 	const [initialDraft] = useState<Component>(initial ?? EMPTY_COMPONENT)
 	const [equipmentDraft, setEquipmentDraft] = useState("")
 	const allowNavigationRef = useRef(false)
+	const ingredientKeyCounterRef = useRef(0)
+	const ingredientKeysRef = useRef<string[]>([])
 	const hasUnsavedChanges =
 		JSON.stringify(draft) !== JSON.stringify(initialDraft) ||
 		equipmentDraft.length > 0
@@ -139,6 +142,15 @@ export function ComponentFormScreen({
 		}))
 	}
 
+	function ingredientRowKey(index: number) {
+		while (ingredientKeysRef.current.length <= index) {
+			ingredientKeysRef.current.push(
+				`component-ingredient-${ingredientKeyCounterRef.current++}`
+			)
+		}
+		return ingredientKeysRef.current[index]
+	}
+
 	function updateIngredient(index: number, ingredient: Ingredient) {
 		setDraft((d) => {
 			const next = [...d.ingredients]
@@ -148,9 +160,22 @@ export function ComponentFormScreen({
 	}
 
 	function removeIngredient(index: number) {
+		ingredientKeysRef.current.splice(index, 1)
 		setDraft((d) => ({
 			...d,
 			ingredients: d.ingredients.filter((_, i) => i !== index)
+		}))
+	}
+
+	function reorderIngredient(fromIndex: number, toIndex: number) {
+		ingredientKeysRef.current = moveItem(
+			ingredientKeysRef.current,
+			fromIndex,
+			toIndex
+		)
+		setDraft((d) => ({
+			...d,
+			ingredients: moveItem(d.ingredients, fromIndex, toIndex)
 		}))
 	}
 
@@ -220,14 +245,21 @@ export function ComponentFormScreen({
 			</View>
 
 			<Field label="Ingredients">
-				{draft.ingredients.map((ingredient, index) => (
-					<IngredientEditor
-						key={index}
-						ingredient={ingredient}
-						onChange={(next) => updateIngredient(index, next)}
-						onRemove={() => removeIngredient(index)}
-					/>
-				))}
+				<ReorderableList
+					items={draft.ingredients}
+					keyExtractor={(_ingredient, index) =>
+						ingredientRowKey(index)
+					}
+					onReorder={reorderIngredient}
+					renderItem={({ item: ingredient, index, dragHandle }) => (
+						<IngredientEditor
+							ingredient={ingredient}
+							dragHandle={dragHandle}
+							onChange={(next) => updateIngredient(index, next)}
+							onRemove={() => removeIngredient(index)}
+						/>
+					)}
+				/>
 				<Pressable onPress={addIngredient} style={styles.addButton}>
 					<Text style={styles.addButtonText}>+ Add ingredient</Text>
 				</Pressable>
@@ -273,6 +305,13 @@ export function ComponentFormScreen({
 			</Field>
 		</KeyboardAwareScrollView>
 	)
+}
+
+function moveItem<T>(items: T[], fromIndex: number, toIndex: number): T[] {
+	const next = [...items]
+	const [moved] = next.splice(fromIndex, 1)
+	next.splice(toIndex, 0, moved)
+	return next
 }
 
 function Field({
