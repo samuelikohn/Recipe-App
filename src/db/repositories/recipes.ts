@@ -71,7 +71,10 @@ export async function getRecipeByName(name: string): Promise<Recipe | null> {
 		id: number
 		name: string
 		num_servings: number
-	}>(`SELECT id, name, num_servings FROM recipes WHERE name = ?;`, [name])
+		directions: string
+	}>(`SELECT id, name, num_servings, directions FROM recipes WHERE name = ?;`, [
+		name
+	])
 	if (!recipeRow) return null
 
 	return hydrateRecipe(db, recipeRow)
@@ -172,7 +175,12 @@ function toSummary(row: {
 
 async function hydrateRecipe(
 	db: Db,
-	recipeRow: { id: number; name: string; num_servings: number }
+	recipeRow: {
+		id: number
+		name: string
+		num_servings: number
+		directions: string
+	}
 ): Promise<Recipe> {
 	const images = await db.getAllAsync<{ filepath: string }>(
 		`SELECT filepath FROM images WHERE recipe_id = ?;`,
@@ -232,6 +240,7 @@ async function hydrateRecipe(
 		id: recipeRow.id,
 		name: recipeRow.name,
 		num_servings: recipeRow.num_servings,
+		directions: recipeRow.directions,
 		images: images.map((i) => i.filepath),
 		components,
 		tags: tags.map((t) => t.tag)
@@ -240,8 +249,8 @@ async function hydrateRecipe(
 
 async function insertRecipeTree(db: Db, recipe: Recipe): Promise<number> {
 	const recipeResult = await db.runAsync(
-		`INSERT INTO recipes (name, num_servings) VALUES (?, ?);`,
-		[recipe.name, recipe.num_servings]
+		`INSERT INTO recipes (name, num_servings, directions) VALUES (?, ?, ?);`,
+		[recipe.name, recipe.num_servings, recipe.directions]
 	)
 	const recipeId = recipeResult.lastInsertRowId
 

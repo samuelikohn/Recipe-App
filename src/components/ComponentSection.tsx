@@ -1,9 +1,10 @@
 import { StyleSheet, Text, View } from "react-native"
 import { Component } from "../models/types"
 import { colors } from "../theme/colors"
-import { fontSize, fontWeight, typography } from "../theme/typography"
+import { fontSize, typography } from "../theme/typography"
 import { splitDirectionSteps } from "../utils/directions"
 import { formatDuration } from "../utils/format"
+import { DirectionsList } from "./DirectionsList"
 import { EquipmentChip } from "./EquipmentChip"
 import { IngredientRow } from "./IngredientRow"
 
@@ -61,14 +62,7 @@ export function ComponentSection({ component, servingsMultiplier = 1 }: Props) {
 			{directionSteps.length > 0 ? (
 				<View style={styles.section}>
 					<Text style={styles.sectionHeader}>Directions</Text>
-					{directionSteps.map((step, index) => (
-						<View key={index} style={styles.directionRow}>
-							<Text style={styles.directionNumber}>
-								{index + 1}.
-							</Text>
-							<Text style={styles.directions}>{step}</Text>
-						</View>
-					))}
+					<DirectionsList directions={component.directions} />
 				</View>
 			) : null}
 		</View>
@@ -102,20 +96,5 @@ const styles = StyleSheet.create({
 	equipmentRow: {
 		flexDirection: "row",
 		flexWrap: "wrap"
-	},
-	directionRow: {
-		flexDirection: "row",
-		marginBottom: 4
-	},
-	directionNumber: {
-		...typography.body,
-		fontWeight: fontWeight.semibold,
-		color: colors.textMuted,
-		width: 24
-	},
-	directions: {
-		...typography.body,
-		flex: 1,
-		color: colors.textDefault
 	}
 })

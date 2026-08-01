@@ -2,7 +2,8 @@ export const SQL_SCHEMA = `
 CREATE TABLE IF NOT EXISTS recipes (
     id           INTEGER PRIMARY KEY AUTOINCREMENT,
     name         TEXT NOT NULL UNIQUE,
-    num_servings INTEGER NOT NULL
+    num_servings INTEGER NOT NULL,
+    directions   TEXT NOT NULL DEFAULT ''
 );
 
 CREATE TABLE IF NOT EXISTS images (

@@ -9,13 +9,15 @@ import {
 	View
 } from "react-native"
 import { ComponentSection } from "../components/ComponentSection"
+import { DirectionsList } from "../components/DirectionsList"
 import { EmptyState } from "../components/EmptyState"
 import { RecipeImageCarousel } from "../components/RecipeImageCarousel"
 import { TagChip } from "../components/TagChip"
 import { useRecipe } from "../hooks/useRecipe"
 import { ScreenProps } from "../navigation/types"
 import { colors } from "../theme/colors"
-import { fontSize, fontWeight } from "../theme/typography"
+import { fontSize, fontWeight, typography } from "../theme/typography"
+import { splitDirectionSteps } from "../utils/directions"
 import { deleteRecipe } from "../db/repositories/recipes"
 import { deleteImageFile } from "../utils/fileStorage"
 
@@ -61,6 +63,10 @@ export function RecipeDetailScreen({
 
 	const currentServings = servings ?? recipe.num_servings
 	const multiplier = currentServings / recipe.num_servings
+	const hasDirections =
+		splitDirectionSteps(recipe.directions).filter(
+			(step) => step.trim().length > 0
+		).length > 0
 
 	async function onDelete() {
 		Alert.alert(
@@ -132,6 +138,13 @@ export function RecipeDetailScreen({
 					</View>
 				) : null}
 			</View>
+
+			{hasDirections ? (
+				<View style={styles.section}>
+					<Text style={styles.sectionHeader}>Directions</Text>
+					<DirectionsList directions={recipe.directions} />
+				</View>
+			) : null}
 
 			{recipe.components.map((component) => (
 				<ComponentSection
@@ -215,6 +228,17 @@ const styles = StyleSheet.create({
 		flexDirection: "row",
 		flexWrap: "wrap",
 		marginTop: 12
+	},
+	section: {
+		paddingHorizontal: 16,
+		paddingVertical: 16,
+		borderBottomWidth: 1,
+		borderBottomColor: colors.border
+	},
+	sectionHeader: {
+		...typography.sectionHeader,
+		color: colors.textMuted,
+		marginBottom: 6
 	},
 	deleteButton: {
 		margin: 24,

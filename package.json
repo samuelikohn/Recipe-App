@@ -1,5 +1,5 @@
 {
-	"name": "recipes",
+	"name": "Recipes",
 	"main": "expo/AppEntry",
 	"version": "1.0.0",
 	"scripts": {

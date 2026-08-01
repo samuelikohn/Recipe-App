@@ -26,9 +26,29 @@ export async function getDb(): Promise<SQLite.SQLiteDatabase> {
 	await db.execAsync("PRAGMA foreign_keys = ON;")
 	await db.execAsync("PRAGMA recursive_triggers = ON;")
 	await db.execAsync(SQL_SCHEMA)
+	await migrateSchema(db)
 
 	dbInstance = db
 	return db
+}
+
+/**
+ * `CREATE TABLE IF NOT EXISTS` in schema.ts only shapes brand-new databases
+ * — it's a no-op against a recipes table that already exists on disk from
+ * before a column was added. There's no versioned migration system here, so
+ * additive columns are patched in by checking PRAGMA table_info and running
+ * ALTER TABLE if missing.
+ */
+async function migrateSchema(db: SQLite.SQLiteDatabase): Promise<void> {
+	const columns = await db.getAllAsync<{ name: string }>(
+		"PRAGMA table_info(recipes);"
+	)
+	const hasDirections = columns.some((c) => c.name === "directions")
+	if (!hasDirections) {
+		await db.execAsync(
+			"ALTER TABLE recipes ADD COLUMN directions TEXT NOT NULL DEFAULT '';"
+		)
+	}
 }
 
 /** Test-only escape hatch to force a fresh connection + schema run. */

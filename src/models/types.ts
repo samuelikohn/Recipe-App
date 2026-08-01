@@ -9,6 +9,7 @@ export type Recipe = {
 	id: number
 	name: string
 	num_servings: number
+	directions: string
 	images: string[]
 	components: Component[]
 	tags: string[]

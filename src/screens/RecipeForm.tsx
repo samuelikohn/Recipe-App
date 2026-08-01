@@ -8,6 +8,7 @@ import {
 	TextInput,
 	View
 } from "react-native"
+import { DirectionsEditor } from "../components/DirectionsEditor"
 import { EmptyState } from "../components/EmptyState"
 import { ImagePickerGrid } from "../components/ImagePickerGrid"
 import { TagInput } from "../components/TagInput"
@@ -15,12 +16,14 @@ import { useRecipe } from "../hooks/useRecipe"
 import { RecipeDraft, ScreenProps } from "../navigation/types"
 import { colors } from "../theme/colors"
 import { fontSize, fontWeight, typography } from "../theme/typography"
+import { joinDirectionSteps, splitDirectionSteps } from "../utils/directions"
 import { validateRecipe } from "../utils/validation"
 import { createRecipe, updateRecipe } from "../db/repositories/recipes"
 
 const EMPTY_DRAFT: RecipeDraft = {
 	name: "",
 	num_servings: 1,
+	directions: "",
 	images: [],
 	components: [],
 	tags: []
@@ -76,7 +79,12 @@ export function RecipeFormScreen({
 
 	async function onSave() {
 		const name = draft.name.trim()
-		const toPersist = { ...draft, name, id: draft.id ?? 0 }
+		const directions = joinDirectionSteps(
+			splitDirectionSteps(draft.directions)
+				.map((step) => step.trim())
+				.filter((step) => step.length > 0)
+		)
+		const toPersist = { ...draft, name, directions, id: draft.id ?? 0 }
 
 		const check = validateRecipe(toPersist)
 		if (!check.ok) {
@@ -161,6 +169,15 @@ export function RecipeFormScreen({
 					placeholder="1"
 					placeholderTextColor={colors.textPlaceholder}
 					keyboardType="number-pad"
+				/>
+			</Field>
+
+			<Field label="Directions">
+				<DirectionsEditor
+					directions={draft.directions}
+					onChange={(directions) =>
+						setDraft((d) => ({ ...d, directions }))
+					}
 				/>
 			</Field>
 
