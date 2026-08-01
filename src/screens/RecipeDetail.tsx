@@ -8,6 +8,7 @@ import {
 	Text,
 	View
 } from "react-native"
+import { useSafeAreaInsets } from "react-native-safe-area-context"
 import { ComponentSection } from "../components/ComponentSection"
 import { DirectionsList } from "../components/DirectionsList"
 import { EmptyState } from "../components/EmptyState"
@@ -27,6 +28,7 @@ export function RecipeDetailScreen({
 }: ScreenProps<"RecipeDetail">) {
 	const { name } = route.params
 	const { recipe, loading, error } = useRecipe(name)
+	const insets = useSafeAreaInsets()
 	const [servings, setServings] = useState<number | null>(null)
 
 	useLayoutEffect(() => {
@@ -92,7 +94,10 @@ export function RecipeDetailScreen({
 	}
 
 	return (
-		<ScrollView style={styles.container}>
+		<ScrollView
+			style={styles.container}
+			contentContainerStyle={{ paddingBottom: insets.bottom }}
+		>
 			{recipe.images.length > 0 ? (
 				<RecipeImageCarousel images={recipe.images} />
 			) : null}

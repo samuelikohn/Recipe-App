@@ -8,6 +8,7 @@ import {
 	TextInput,
 	View
 } from "react-native"
+import { useSafeAreaInsets } from "react-native-safe-area-context"
 import { DirectionsEditor } from "../components/DirectionsEditor"
 import { EmptyState } from "../components/EmptyState"
 import { ImagePickerGrid } from "../components/ImagePickerGrid"
@@ -41,14 +42,14 @@ export function RecipeFormScreen({
 }: ScreenProps<"RecipeForm">) {
 	const editingName = route.params?.name
 	const { recipe, loading } = useRecipe(editingName)
+	const insets = useSafeAreaInsets()
 	const [draft, setDraft] = useState<RecipeDraft>(EMPTY_DRAFT)
 	const [initialDraft, setInitialDraft] = useState<RecipeDraft>(EMPTY_DRAFT)
 	const [initialized, setInitialized] = useState(false)
 	const [saving, setSaving] = useState(false)
 	const allowNavigationRef = useRef(false)
 	const hasUnsavedChanges =
-		initialized &&
-		JSON.stringify(draft) !== JSON.stringify(initialDraft)
+		initialized && JSON.stringify(draft) !== JSON.stringify(initialDraft)
 
 	// Hydrate from the fetched recipe once when editing. We only do this on
 	// the first successful load so the user's in-progress edits aren't
@@ -180,6 +181,10 @@ export function RecipeFormScreen({
 	return (
 		<ScrollView
 			style={styles.container}
+			contentContainerStyle={[
+				styles.content,
+				{ paddingBottom: 16 + insets.bottom }
+			]}
 			keyboardShouldPersistTaps="handled"
 		>
 			<Field label="Name">
@@ -281,7 +286,9 @@ function Field({
 const styles = StyleSheet.create({
 	container: {
 		flex: 1,
-		backgroundColor: colors.surface,
+		backgroundColor: colors.surface
+	},
+	content: {
 		padding: 16
 	},
 	headerButton: {

@@ -1,5 +1,6 @@
 import { useLayoutEffect } from "react"
 import { ActivityIndicator, FlatList, StyleSheet, View } from "react-native"
+import { useSafeAreaInsets } from "react-native-safe-area-context"
 import { EmptyState } from "../components/EmptyState"
 import { RecipeCard } from "../components/RecipeCard"
 import { SearchBar } from "../components/SearchBar"
@@ -9,6 +10,7 @@ import { colors } from "../theme/colors"
 
 export function SearchScreen({ navigation }: ScreenProps<"Search">) {
 	const { query, setQuery, results, loading, error } = useSearch()
+	const insets = useSafeAreaInsets()
 
 	useLayoutEffect(() => {
 		navigation.setOptions({ title: "Search" })
@@ -38,6 +40,9 @@ export function SearchScreen({ navigation }: ScreenProps<"Search">) {
 				<FlatList
 					data={results}
 					keyExtractor={(recipe) => recipe.name}
+					contentContainerStyle={{
+						paddingBottom: insets.bottom
+					}}
 					renderItem={({ item }) => (
 						<RecipeCard
 							recipe={item}

@@ -8,6 +8,7 @@ import {
 	Text,
 	View
 } from "react-native"
+import { useSafeAreaInsets } from "react-native-safe-area-context"
 import { EmptyState } from "../components/EmptyState"
 import { RecipeCard } from "../components/RecipeCard"
 import { TagChip } from "../components/TagChip"
@@ -22,6 +23,7 @@ import { colors } from "../theme/colors"
  */
 export function RecipeListScreen({ navigation }: ScreenProps<"RecipeList">) {
 	const [selectedTags, setSelectedTags] = useState<string[]>([])
+	const insets = useSafeAreaInsets()
 	const { recipes, loading, error } = useRecipes(selectedTags)
 
 	// Compute the union of tags across all currently visible recipes so the
@@ -117,6 +119,9 @@ export function RecipeListScreen({ navigation }: ScreenProps<"RecipeList">) {
 				<FlatList
 					data={recipes}
 					keyExtractor={(recipe) => recipe.name}
+					contentContainerStyle={{
+						paddingBottom: insets.bottom
+					}}
 					renderItem={({ item }) => (
 						<RecipeCard
 							recipe={item}

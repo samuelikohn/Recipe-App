@@ -8,6 +8,7 @@ import {
 	TextInput,
 	View
 } from "react-native"
+import { useSafeAreaInsets } from "react-native-safe-area-context"
 import { DirectionsEditor } from "../components/DirectionsEditor"
 import { EquipmentChip } from "../components/EquipmentChip"
 import { IngredientEditor } from "../components/IngredientEditor"
@@ -47,6 +48,7 @@ export function ComponentFormScreen({
 	navigation
 }: ScreenProps<"ComponentForm">) {
 	const { initial, onSubmit } = route.params
+	const insets = useSafeAreaInsets()
 	const [draft, setDraft] = useState<Component>(initial ?? EMPTY_COMPONENT)
 	const [initialDraft] = useState<Component>(initial ?? EMPTY_COMPONENT)
 	const [equipmentDraft, setEquipmentDraft] = useState("")
@@ -174,6 +176,10 @@ export function ComponentFormScreen({
 	return (
 		<ScrollView
 			style={styles.container}
+			contentContainerStyle={[
+				styles.content,
+				{ paddingBottom: 16 + insets.bottom }
+			]}
 			keyboardShouldPersistTaps="handled"
 		>
 			<Field label="Name">
@@ -289,7 +295,9 @@ function Field({
 const styles = StyleSheet.create({
 	container: {
 		flex: 1,
-		backgroundColor: colors.surface,
+		backgroundColor: colors.surface
+	},
+	content: {
 		padding: 16
 	},
 	headerButton: {
