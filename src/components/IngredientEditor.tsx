@@ -74,6 +74,7 @@ export function IngredientEditor({ ingredient, onChange, onRemove }: Props) {
 					onChangeText={(unit) => onChange({ ...ingredient, unit })}
 					placeholder="Unit"
 					placeholderTextColor={colors.textPlaceholder}
+					autoCapitalize="none"
 					autoCorrect={false}
 				/>
 				<TextInput
@@ -82,6 +83,7 @@ export function IngredientEditor({ ingredient, onChange, onRemove }: Props) {
 					onChangeText={(prep) => onChange({ ...ingredient, prep })}
 					placeholder="Prep (chopped, etc.)"
 					placeholderTextColor={colors.textPlaceholder}
+					autoCapitalize="none"
 					autoCorrect={false}
 				/>
 			</View>

@@ -62,7 +62,7 @@ export function DatabaseProvider({ children }: { children: ReactNode }) {
 			{error ? (
 				<View style={styles.centered}>
 					<Text style={styles.errorTitle}>
-						Couldn't open the recipe database
+						Could not open the recipe database
 					</Text>
 					<Text style={styles.errorBody}>{error.message}</Text>
 				</View>
