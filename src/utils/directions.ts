@@ -4,7 +4,6 @@
  * are the only place that encoding lives, so editor and display stay in sync.
  */
 export function splitDirectionSteps(directions: string): string[] {
-	if (!directions) return []
 	return directions.split("\n")
 }
 
