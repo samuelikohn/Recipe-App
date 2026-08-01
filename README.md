@@ -1,9 +1,8 @@
-allow further scrolling down - CHECK
-auto scroll to above keyboard - CHECK
-confirm on exit edit page w/o saving - CHECK
+auto scroll to above keyboard - just below keyboard, not quite high enough
 resize images again
+capitalize name?
 add client validation for entry fields?
-no auto capital on prep and units fields - CHECK
-drag to reorder ingredients, directions - CHECK
+drag to reorder ingredients, directions - works, but behaves weird
 garbage collection
-add ingredients, prep/cook time to recipe level - CHECK
+on enter direction, move cursor to next step
+remove ingredients, direction, prep, from recipe level
