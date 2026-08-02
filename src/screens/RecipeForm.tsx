@@ -8,21 +8,17 @@ import {
 	View
 } from "react-native"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
-import { DirectionsEditor } from "../components/DirectionsEditor"
 import { EmptyState } from "../components/EmptyState"
 import { ImagePickerGrid } from "../components/ImagePickerGrid"
-import { IngredientEditor } from "../components/IngredientEditor"
 import { KeyboardAwareScrollView } from "../components/KeyboardAwareScrollView"
-import { ReorderableList } from "../components/ReorderableList"
 import { TagInput } from "../components/TagInput"
+import { createRecipe, updateRecipe } from "../db/repositories/recipes"
 import { useRecipe } from "../hooks/useRecipe"
-import { Ingredient } from "../models/types"
 import { RecipeDraft, ScreenProps } from "../navigation/types"
 import { colors } from "../theme/colors"
 import { fontSize, fontWeight, typography } from "../theme/typography"
 import { joinDirectionSteps, splitDirectionSteps } from "../utils/directions"
 import { validateRecipe } from "../utils/validation"
-import { createRecipe, updateRecipe } from "../db/repositories/recipes"
 
 const EMPTY_DRAFT: RecipeDraft = {
 	name: "",
@@ -34,13 +30,6 @@ const EMPTY_DRAFT: RecipeDraft = {
 	images: [],
 	components: [],
 	tags: []
-}
-
-const EMPTY_INGREDIENT: Ingredient = {
-	name: "",
-	amount: 0,
-	unit: "",
-	prep: ""
 }
 
 /**
@@ -61,8 +50,6 @@ export function RecipeFormScreen({
 	const [initialized, setInitialized] = useState(false)
 	const [saving, setSaving] = useState(false)
 	const allowNavigationRef = useRef(false)
-	const ingredientKeyCounterRef = useRef(0)
-	const ingredientKeysRef = useRef<string[]>([])
 	const hasUnsavedChanges =
 		initialized && JSON.stringify(draft) !== JSON.stringify(initialDraft)
 
@@ -176,58 +163,6 @@ export function RecipeFormScreen({
 		}))
 	}
 
-	function updateNumber(field: "prep_time" | "cook_time", text: string) {
-		const parsed = parseInt(text.replace(/[^0-9]/g, ""), 10)
-		setDraft((d) => ({
-			...d,
-			[field]: Number.isFinite(parsed) ? parsed : 0
-		}))
-	}
-
-	function addIngredient() {
-		setDraft((d) => ({
-			...d,
-			ingredients: [...d.ingredients, { ...EMPTY_INGREDIENT }]
-		}))
-	}
-
-	function ingredientRowKey(index: number) {
-		while (ingredientKeysRef.current.length <= index) {
-			ingredientKeysRef.current.push(
-				`recipe-ingredient-${ingredientKeyCounterRef.current++}`
-			)
-		}
-		return ingredientKeysRef.current[index]
-	}
-
-	function updateIngredient(index: number, ingredient: Ingredient) {
-		setDraft((d) => {
-			const next = [...d.ingredients]
-			next[index] = ingredient
-			return { ...d, ingredients: next }
-		})
-	}
-
-	function removeIngredient(index: number) {
-		ingredientKeysRef.current.splice(index, 1)
-		setDraft((d) => ({
-			...d,
-			ingredients: d.ingredients.filter((_, i) => i !== index)
-		}))
-	}
-
-	function reorderIngredient(fromIndex: number, toIndex: number) {
-		ingredientKeysRef.current = moveItem(
-			ingredientKeysRef.current,
-			fromIndex,
-			toIndex
-		)
-		setDraft((d) => ({
-			...d,
-			ingredients: moveItem(d.ingredients, fromIndex, toIndex)
-		}))
-	}
-
 	function openComponentForm(index: number) {
 		const initial = index >= 0 ? draft.components[index] : null
 		navigation.navigate("ComponentForm", {
@@ -286,63 +221,6 @@ export function RecipeFormScreen({
 				/>
 			</Field>
 
-			<View style={styles.timingRow}>
-				<Field label="Prep (min)" style={styles.timingField}>
-					<TextInput
-						style={styles.input}
-						value={
-							draft.prep_time ? draft.prep_time.toString() : ""
-						}
-						onChangeText={(t) => updateNumber("prep_time", t)}
-						placeholder="0"
-						placeholderTextColor={colors.textPlaceholder}
-						keyboardType="number-pad"
-					/>
-				</Field>
-				<Field label="Cook (min)" style={styles.timingField}>
-					<TextInput
-						style={styles.input}
-						value={
-							draft.cook_time ? draft.cook_time.toString() : ""
-						}
-						onChangeText={(t) => updateNumber("cook_time", t)}
-						placeholder="0"
-						placeholderTextColor={colors.textPlaceholder}
-						keyboardType="number-pad"
-					/>
-				</Field>
-			</View>
-
-			<Field label="Ingredients">
-				<ReorderableList
-					items={draft.ingredients}
-					keyExtractor={(_ingredient, index) =>
-						ingredientRowKey(index)
-					}
-					onReorder={reorderIngredient}
-					renderItem={({ item: ingredient, index, dragHandle }) => (
-						<IngredientEditor
-							ingredient={ingredient}
-							dragHandle={dragHandle}
-							onChange={(next) => updateIngredient(index, next)}
-							onRemove={() => removeIngredient(index)}
-						/>
-					)}
-				/>
-				<Pressable onPress={addIngredient} style={styles.addButton}>
-					<Text style={styles.addButtonText}>+ Add ingredient</Text>
-				</Pressable>
-			</Field>
-
-			<Field label="Directions">
-				<DirectionsEditor
-					directions={draft.directions}
-					onChange={(directions) =>
-						setDraft((d) => ({ ...d, directions }))
-					}
-				/>
-			</Field>
-
 			<Field label="Photos">
 				<ImagePickerGrid
 					images={draft.images}
@@ -390,13 +268,6 @@ export function RecipeFormScreen({
 			</Field>
 		</KeyboardAwareScrollView>
 	)
-}
-
-function moveItem<T>(items: T[], fromIndex: number, toIndex: number): T[] {
-	const next = [...items]
-	const [moved] = next.splice(fromIndex, 1)
-	next.splice(toIndex, 0, moved)
-	return next
 }
 
 function Field({
