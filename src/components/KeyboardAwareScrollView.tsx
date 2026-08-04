@@ -9,6 +9,11 @@ import {
 	TextInput,
 	View
 } from "react-native"
+import Animated, { useAnimatedRef } from "react-native-reanimated"
+import {
+	AnimatedScrollViewRef,
+	ScrollableRefProvider
+} from "./ScrollableRefContext"
 
 type Props = ScrollViewProps & {
 	children: ReactNode
@@ -52,6 +57,12 @@ type MeasurableScrollView = ScrollView & {
  * ScrollView that keeps the focused TextInput visible above the keyboard.
  * It works for nested editors because it measures React Native's currently
  * focused input instead of requiring every child input to pass an onFocus.
+ *
+ * It's an Animated.ScrollView with a reanimated animated ref so nested
+ * sortable lists can auto-scroll the form while dragging — sortables tracks
+ * the offset via `useScrollViewOffset`, which resolves the view by tag and so
+ * only works on an animated ref. The same ref doubles as the plain ref used
+ * below, because Animated.ScrollView forwards the inner ScrollView instance.
  */
 export function KeyboardAwareScrollView({
 	children,
@@ -62,7 +73,7 @@ export function KeyboardAwareScrollView({
 	scrollEventThrottle,
 	...props
 }: Props) {
-	const scrollViewRef = useRef<ScrollView>(null)
+	const scrollViewRef: AnimatedScrollViewRef = useAnimatedRef()
 	const contentRef = useRef<View>(null)
 	const scrollYRef = useRef(0)
 	const keyboardTopRef = useRef<number | null>(null)
@@ -71,7 +82,10 @@ export function KeyboardAwareScrollView({
 		const focusedInput = (
 			TextInput.State as TextInputState
 		).currentlyFocusedInput?.()
-		const scrollView = scrollViewRef.current
+		// Animated.ScrollView forwards the inner ScrollView instance, so the
+		// scroll/measure methods below are present at runtime even though the
+		// animated ref is typed against the Animated wrapper.
+		const scrollView = scrollViewRef.current as ScrollView | null
 		const content = contentRef.current
 
 		if (!focusedInput || !scrollView || !content) return
@@ -121,7 +135,9 @@ export function KeyboardAwareScrollView({
 				)
 			}
 		)
-	}, [keyboardGap])
+		// scrollViewRef is listed because useAnimatedRef isn't recognised as a
+		// ref hook by the lint rule; it's stable across renders either way.
+	}, [keyboardGap, scrollViewRef])
 
 	const scheduleScrollFocusedInputIntoView = useCallback(() => {
 		setTimeout(scrollFocusedInputIntoView, 50)
@@ -165,16 +181,21 @@ export function KeyboardAwareScrollView({
 	}
 
 	return (
-		<ScrollView
-			{...props}
-			ref={scrollViewRef}
-			onScroll={handleScroll}
-			onTouchEndCapture={handleTouchEndCapture}
-			scrollEventThrottle={scrollEventThrottle ?? 16}
-		>
-			<View ref={contentRef} style={contentContainerStyle}>
-				{children}
-			</View>
-		</ScrollView>
+		<ScrollableRefProvider scrollableRef={scrollViewRef}>
+			<Animated.ScrollView
+				{...props}
+				ref={scrollViewRef}
+				onScroll={handleScroll}
+				onTouchEndCapture={handleTouchEndCapture}
+				// Keep this at 16 or below: sortables' auto-scroll reads the
+				// offset from scroll events, and a coarser throttle makes the
+				// drag stutter.
+				scrollEventThrottle={scrollEventThrottle ?? 16}
+			>
+				<View ref={contentRef} style={contentContainerStyle}>
+					{children}
+				</View>
+			</Animated.ScrollView>
+		</ScrollableRefProvider>
 	)
 }

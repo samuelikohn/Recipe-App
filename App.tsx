@@ -1,4 +1,6 @@
 import { StatusBar } from "expo-status-bar"
+import { StyleSheet } from "react-native"
+import { GestureHandlerRootView } from "react-native-gesture-handler"
 import { SafeAreaProvider } from "react-native-safe-area-context"
 import { DatabaseProvider } from "./src/hooks/DataBaseProvider"
 import { RootNavigator } from "./src/navigation/RootNavigator"
@@ -9,7 +11,10 @@ import { RootNavigator } from "./src/navigation/RootNavigator"
  * the tree.
  *
  * Wrapping order:
- *  - SafeAreaProvider outermost so navigator headers and screens both get
+ *  - GestureHandlerRootView outermost, required by every
+ *    react-native-gesture-handler consumer (the drag-to-reorder lists).
+ *    It needs an explicit `flex: 1` or the whole app renders zero-height.
+ *  - SafeAreaProvider next so navigator headers and screens both get
  *    a valid inset frame.
  *  - DatabaseProvider next so the nav tree only renders after the schema
  *    has run (see DataBaseProvider.tsx).
@@ -18,11 +23,19 @@ import { RootNavigator } from "./src/navigation/RootNavigator"
  */
 export default function App() {
 	return (
-		<SafeAreaProvider>
-			<DatabaseProvider>
-				<RootNavigator />
-			</DatabaseProvider>
-			<StatusBar style="auto" />
-		</SafeAreaProvider>
+		<GestureHandlerRootView style={styles.root}>
+			<SafeAreaProvider>
+				<DatabaseProvider>
+					<RootNavigator />
+				</DatabaseProvider>
+				<StatusBar style="auto" />
+			</SafeAreaProvider>
+		</GestureHandlerRootView>
 	)
 }
+
+const styles = StyleSheet.create({
+	root: {
+		flex: 1
+	}
+})

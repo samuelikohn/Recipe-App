@@ -8,12 +8,17 @@ import {
 	View
 } from "react-native"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
+import Sortable from "react-native-sortables"
+import { DragHandle } from "../components/DragHandle"
 import { EmptyState } from "../components/EmptyState"
 import { ImagePickerGrid } from "../components/ImagePickerGrid"
 import { KeyboardAwareScrollView } from "../components/KeyboardAwareScrollView"
+import { useScrollableRef } from "../components/ScrollableRefContext"
 import { TagInput } from "../components/TagInput"
 import { createRecipe, updateRecipe } from "../db/repositories/recipes"
 import { useRecipe } from "../hooks/useRecipe"
+import { useRowKeys } from "../hooks/useRowKeys"
+import { Component } from "../models/types"
 import { RecipeDraft, ScreenProps } from "../navigation/types"
 import { colors } from "../theme/colors"
 import { fontSize, fontWeight, typography } from "../theme/typography"
@@ -30,6 +35,11 @@ const EMPTY_DRAFT: RecipeDraft = {
 	images: [],
 	components: [],
 	tags: []
+}
+
+type ComponentRow = {
+	key: string
+	component: Component
 }
 
 /**
@@ -50,6 +60,14 @@ export function RecipeFormScreen({
 	const [initialized, setInitialized] = useState(false)
 	const [saving, setSaving] = useState(false)
 	const allowNavigationRef = useRef(false)
+	const scrollableRef = useScrollableRef()
+	// Unsaved components all carry id 0, so the sortable list needs synthetic
+	// keys kept parallel to draft.components.
+	const componentKeys = useRowKeys("recipe-component")
+	const componentRowKeys = componentKeys.sync(draft.components.length)
+	const componentRows: ComponentRow[] = draft.components.map(
+		(component, index) => ({ key: componentRowKeys[index], component })
+	)
 	const hasUnsavedChanges =
 		initialized && JSON.stringify(draft) !== JSON.stringify(initialDraft)
 
@@ -179,9 +197,26 @@ export function RecipeFormScreen({
 	}
 
 	function removeComponent(index: number) {
+		componentKeys.remove(index)
 		setDraft((d) => ({
 			...d,
 			components: d.components.filter((_, i) => i !== index)
+		}))
+	}
+
+	/**
+	 * Applies a finished drag. The permutation comes from the row keys rather
+	 * than the row objects captured at render time, so it lands on the
+	 * freshest draft.
+	 */
+	function applyComponentOrder(orderedRows: ComponentRow[]) {
+		const order = componentKeys.applyOrder(
+			orderedRows.map((row) => row.key)
+		)
+		if (!order) return
+		setDraft((d) => ({
+			...d,
+			components: order.map((index) => d.components[index])
 		}))
 	}
 
@@ -236,29 +271,57 @@ export function RecipeFormScreen({
 			</Field>
 
 			<Field label="Components">
-				{draft.components.map((component, index) => (
-					<View key={index} style={styles.componentRow}>
-						<Pressable
-							onPress={() => openComponentForm(index)}
-							style={styles.componentBody}
-						>
-							<Text style={styles.componentName}>
-								{component.name || "(unnamed)"}
-							</Text>
-							<Text style={styles.componentMeta}>
-								{component.ingredients.length} ingredient
-								{component.ingredients.length === 1 ? "" : "s"}
-							</Text>
-						</Pressable>
-						<Pressable
-							onPress={() => removeComponent(index)}
-							hitSlop={8}
-							style={styles.componentRemove}
-						>
-							<Text style={styles.componentRemoveText}>✕</Text>
-						</Pressable>
-					</View>
-				))}
+				{componentRows.length > 0 && (
+					<Sortable.Layer>
+						<Sortable.Grid
+							columns={1}
+							rowGap={8}
+							data={componentRows}
+							keyExtractor={(row) => row.key}
+							renderItem={({ item, index }) => (
+								<View style={styles.componentRow}>
+									<DragHandle />
+									<Pressable
+										onPress={() => openComponentForm(index)}
+										style={styles.componentBody}
+									>
+										<Text style={styles.componentName}>
+											{item.component.name || "(unnamed)"}
+										</Text>
+										<Text style={styles.componentMeta}>
+											{item.component.ingredients.length}{" "}
+											ingredient
+											{item.component.ingredients
+												.length === 1
+												? ""
+												: "s"}
+										</Text>
+									</Pressable>
+									<Pressable
+										onPress={() => removeComponent(index)}
+										hitSlop={8}
+										style={styles.componentRemove}
+									>
+										<Text
+											style={styles.componentRemoveText}
+										>
+											✕
+										</Text>
+									</Pressable>
+								</View>
+							)}
+							onDragEnd={({ data }) => applyComponentOrder(data)}
+							customHandle
+							hapticsEnabled
+							sortEnabled={componentRows.length > 1}
+							scrollableRef={scrollableRef}
+							activeItemScale={1.02}
+							inactiveItemOpacity={1}
+							itemEntering={null}
+							itemExiting={null}
+						/>
+					</Sortable.Layer>
+				)}
 				<Pressable
 					onPress={() => openComponentForm(-1)}
 					style={styles.addButton}
@@ -334,8 +397,8 @@ const styles = StyleSheet.create({
 		borderWidth: 1,
 		borderColor: colors.border,
 		borderRadius: 8,
-		marginBottom: 8,
 		padding: 12
+		// No marginBottom — the grid's rowGap owns the spacing between rows.
 	},
 	componentBody: {
 		flex: 1

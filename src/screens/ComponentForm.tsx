@@ -8,11 +8,14 @@ import {
 	View
 } from "react-native"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
+import Sortable from "react-native-sortables"
 import { DirectionsEditor } from "../components/DirectionsEditor"
+import { DragHandle } from "../components/DragHandle"
 import { EquipmentChip } from "../components/EquipmentChip"
 import { IngredientEditor } from "../components/IngredientEditor"
 import { KeyboardAwareScrollView } from "../components/KeyboardAwareScrollView"
-import { ReorderableList } from "../components/ReorderableList"
+import { useScrollableRef } from "../components/ScrollableRefContext"
+import { useRowKeys } from "../hooks/useRowKeys"
 import { Component, Ingredient } from "../models/types"
 import { ScreenProps } from "../navigation/types"
 import { colors } from "../theme/colors"
@@ -37,6 +40,11 @@ const EMPTY_INGREDIENT: Ingredient = {
 	prep: ""
 }
 
+type IngredientRow = {
+	key: string
+	ingredient: Ingredient
+}
+
 /**
  * Push-navigated child of RecipeFormScreen. Edits a Component in-memory and
  * hands the result back through the `onSubmit` callback that
@@ -54,8 +62,14 @@ export function ComponentFormScreen({
 	const [initialDraft] = useState<Component>(initial ?? EMPTY_COMPONENT)
 	const [equipmentDraft, setEquipmentDraft] = useState("")
 	const allowNavigationRef = useRef(false)
-	const ingredientKeyCounterRef = useRef(0)
-	const ingredientKeysRef = useRef<string[]>([])
+	const scrollableRef = useScrollableRef()
+	// Ingredients have no id of their own, so the sortable list needs
+	// synthetic keys kept parallel to draft.ingredients.
+	const ingredientKeys = useRowKeys("component-ingredient")
+	const ingredientRowKeys = ingredientKeys.sync(draft.ingredients.length)
+	const ingredientRows: IngredientRow[] = draft.ingredients.map(
+		(ingredient, index) => ({ key: ingredientRowKeys[index], ingredient })
+	)
 	const hasUnsavedChanges =
 		JSON.stringify(draft) !== JSON.stringify(initialDraft) ||
 		equipmentDraft.length > 0
@@ -142,15 +156,6 @@ export function ComponentFormScreen({
 		}))
 	}
 
-	function ingredientRowKey(index: number) {
-		while (ingredientKeysRef.current.length <= index) {
-			ingredientKeysRef.current.push(
-				`component-ingredient-${ingredientKeyCounterRef.current++}`
-			)
-		}
-		return ingredientKeysRef.current[index]
-	}
-
 	function updateIngredient(index: number, ingredient: Ingredient) {
 		setDraft((d) => {
 			const next = [...d.ingredients]
@@ -160,22 +165,27 @@ export function ComponentFormScreen({
 	}
 
 	function removeIngredient(index: number) {
-		ingredientKeysRef.current.splice(index, 1)
+		ingredientKeys.remove(index)
 		setDraft((d) => ({
 			...d,
 			ingredients: d.ingredients.filter((_, i) => i !== index)
 		}))
 	}
 
-	function reorderIngredient(fromIndex: number, toIndex: number) {
-		ingredientKeysRef.current = moveItem(
-			ingredientKeysRef.current,
-			fromIndex,
-			toIndex
+	/**
+	 * Applies a finished drag. The permutation is derived from the row keys
+	 * rather than from the row objects captured at render time, so the
+	 * reorder is applied to the freshest draft even if a keystroke is still
+	 * in flight.
+	 */
+	function applyIngredientOrder(orderedRows: IngredientRow[]) {
+		const order = ingredientKeys.applyOrder(
+			orderedRows.map((row) => row.key)
 		)
+		if (!order) return
 		setDraft((d) => ({
 			...d,
-			ingredients: moveItem(d.ingredients, fromIndex, toIndex)
+			ingredients: order.map((index) => d.ingredients[index])
 		}))
 	}
 
@@ -245,21 +255,37 @@ export function ComponentFormScreen({
 			</View>
 
 			<Field label="Ingredients">
-				<ReorderableList
-					items={draft.ingredients}
-					keyExtractor={(_ingredient, index) =>
-						ingredientRowKey(index)
-					}
-					onReorder={reorderIngredient}
-					renderItem={({ item: ingredient, index, dragHandle }) => (
-						<IngredientEditor
-							ingredient={ingredient}
-							dragHandle={dragHandle}
-							onChange={(next) => updateIngredient(index, next)}
-							onRemove={() => removeIngredient(index)}
+				{ingredientRows.length > 0 && (
+					<Sortable.Layer>
+						<Sortable.Grid
+							columns={1}
+							data={ingredientRows}
+							keyExtractor={(row) => row.key}
+							renderItem={({ item, index }) => (
+								<IngredientEditor
+									ingredient={item.ingredient}
+									dragHandle={<DragHandle />}
+									onChange={(next) =>
+										updateIngredient(index, next)
+									}
+									onRemove={() => removeIngredient(index)}
+								/>
+							)}
+							onDragEnd={({ data }) => applyIngredientOrder(data)}
+							customHandle
+							hapticsEnabled
+							sortEnabled={ingredientRows.length > 1}
+							scrollableRef={scrollableRef}
+							// No rowGap: IngredientEditor's own
+							// paddingVertical + bottom border already supply
+							// the spacing and separators.
+							activeItemScale={1.02}
+							inactiveItemOpacity={1}
+							itemEntering={null}
+							itemExiting={null}
 						/>
-					)}
-				/>
+					</Sortable.Layer>
+				)}
 				<Pressable onPress={addIngredient} style={styles.addButton}>
 					<Text style={styles.addButtonText}>+ Add ingredient</Text>
 				</Pressable>
@@ -305,13 +331,6 @@ export function ComponentFormScreen({
 			</Field>
 		</KeyboardAwareScrollView>
 	)
-}
-
-function moveItem<T>(items: T[], fromIndex: number, toIndex: number): T[] {
-	const next = [...items]
-	const [moved] = next.splice(fromIndex, 1)
-	next.splice(toIndex, 0, moved)
-	return next
 }
 
 function Field({
