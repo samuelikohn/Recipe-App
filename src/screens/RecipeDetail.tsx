@@ -149,8 +149,8 @@ export function RecipeDetailScreen({
 
 				{totalTime > 0 ? (
 					<Text style={styles.timing}>
-						Prep {formatDuration(prepTime)} - Cook{" "}
-						{formatDuration(cookTime)} - Total{" "}
+						Prep {formatDuration(prepTime)} · Cook{" "}
+						{formatDuration(cookTime)} · Total{" "}
 						{formatDuration(totalTime)}
 					</Text>
 				) : null}
