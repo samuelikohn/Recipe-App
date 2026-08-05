@@ -1,6 +1,7 @@
 import { StatusBar } from "expo-status-bar"
 import { StyleSheet } from "react-native"
 import { GestureHandlerRootView } from "react-native-gesture-handler"
+import { KeyboardProvider } from "react-native-keyboard-controller"
 import { SafeAreaProvider } from "react-native-safe-area-context"
 import { DatabaseProvider } from "./src/hooks/DataBaseProvider"
 import { RootNavigator } from "./src/navigation/RootNavigator"
@@ -14,6 +15,8 @@ import { RootNavigator } from "./src/navigation/RootNavigator"
  *  - GestureHandlerRootView outermost, required by every
  *    react-native-gesture-handler consumer (the drag-to-reorder lists).
  *    It needs an explicit `flex: 1` or the whole app renders zero-height.
+ *  - KeyboardProvider next, required by react-native-keyboard-controller's
+ *    KeyboardAwareScrollView (see components/KeyboardAwareScrollView.tsx).
  *  - SafeAreaProvider next so navigator headers and screens both get
  *    a valid inset frame.
  *  - DatabaseProvider next so the nav tree only renders after the schema
@@ -24,12 +27,14 @@ import { RootNavigator } from "./src/navigation/RootNavigator"
 export default function App() {
 	return (
 		<GestureHandlerRootView style={styles.root}>
-			<SafeAreaProvider>
-				<DatabaseProvider>
-					<RootNavigator />
-				</DatabaseProvider>
-				<StatusBar style="auto" />
-			</SafeAreaProvider>
+			<KeyboardProvider>
+				<SafeAreaProvider>
+					<DatabaseProvider>
+						<RootNavigator />
+					</DatabaseProvider>
+					<StatusBar style="auto" />
+				</SafeAreaProvider>
+			</KeyboardProvider>
 		</GestureHandlerRootView>
 	)
 }

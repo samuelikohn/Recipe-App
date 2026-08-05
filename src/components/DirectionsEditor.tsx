@@ -1,4 +1,12 @@
-import { Pressable, StyleSheet, Text, TextInput, View } from "react-native"
+import { useRef } from "react"
+import {
+	Keyboard,
+	Pressable,
+	StyleSheet,
+	Text,
+	TextInput,
+	View
+} from "react-native"
 import Sortable from "react-native-sortables"
 import { useRowKeys } from "../hooks/useRowKeys"
 import { colors } from "../theme/colors"
@@ -29,12 +37,29 @@ type StepRow = {
 export function DirectionsEditor({ directions, onChange }: Props) {
 	const scrollableRef = useScrollableRef()
 	const stepKeys = useRowKeys("direction-step")
+	// Keyed by row key rather than index so the refs survive a reorder.
+	const inputRefs = useRef<Record<string, TextInput | null>>({})
 	const steps = splitDirectionSteps(directions)
 	const keys = stepKeys.sync(steps.length)
 	const rows: StepRow[] = steps.map((step, index) => ({
 		key: keys[index],
 		step
 	}))
+
+	/**
+	 * Enter moves down the list instead of inserting a newline (the inputs stay
+	 * multiline so long steps still wrap). On the last step there is nowhere to
+	 * go, so it closes the keyboard.
+	 */
+	function focusNextStep(index: number) {
+		const nextKey = keys[index + 1]
+		const nextInput = nextKey ? inputRefs.current[nextKey] : undefined
+		if (nextInput) {
+			nextInput.focus()
+		} else {
+			Keyboard.dismiss()
+		}
+	}
 
 	function updateStep(index: number, text: string) {
 		const next = [...steps]
@@ -74,12 +99,27 @@ export function DirectionsEditor({ directions, onChange }: Props) {
 							<DragHandle />
 							<Text style={styles.stepNumber}>{index + 1}.</Text>
 							<TextInput
+								ref={(input) => {
+									if (input) {
+										inputRefs.current[item.key] = input
+									} else {
+										delete inputRefs.current[item.key]
+									}
+								}}
 								style={[styles.input, styles.stepInput]}
 								value={item.step}
 								onChangeText={(text) => updateStep(index, text)}
 								placeholder={`Step ${index + 1}`}
 								placeholderTextColor={colors.textPlaceholder}
 								multiline
+								// "submit" keeps the keyboard open and skips the
+								// newline a multiline input would otherwise
+								// insert, so onSubmitEditing can hand focus on.
+								submitBehavior="submit"
+								onSubmitEditing={() => focusNextStep(index)}
+								returnKeyType={
+									index === rows.length - 1 ? "done" : "next"
+								}
 							/>
 							<Pressable
 								onPress={() => removeStep(index)}
