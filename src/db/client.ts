@@ -63,6 +63,41 @@ async function migrateSchema(db: SQLite.SQLiteDatabase): Promise<void> {
 	}
 
 	await migrateComponentIngredientsKey(db)
+	await migrateComponentPosition(db)
+}
+
+/**
+ * Adds components.position, which records the order the user arranged a
+ * recipe's components in.
+ *
+ * Backfill uses id order, which is the order the components were originally
+ * inserted. For any recipe that has been edited since it was created that's
+ * also the alphabetical order it has been displaying in (updateRecipe
+ * re-inserts the whole tree from a draft that was itself hydrated in index
+ * order), so this is a no-op for those and restores the original entry order
+ * for the rest.
+ */
+async function migrateComponentPosition(
+	db: SQLite.SQLiteDatabase
+): Promise<void> {
+	const columns = await db.getAllAsync<{ name: string }>(
+		"PRAGMA table_info(components);"
+	)
+	// An empty result means a brand-new database whose table hasn't been
+	// created yet — schema.ts already includes the column.
+	if (columns.length === 0) return
+	if (columns.some((c) => c.name === "position")) return
+
+	await db.execAsync(
+		"ALTER TABLE components ADD COLUMN position INTEGER NOT NULL DEFAULT 0;"
+	)
+	await db.execAsync(`
+        UPDATE components SET position = (
+            SELECT COUNT(*) FROM components AS earlier
+            WHERE earlier.recipe_id = components.recipe_id
+              AND earlier.id < components.id
+        );
+    `)
 }
 
 /**

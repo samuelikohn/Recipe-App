@@ -215,7 +215,11 @@ async function hydrateRecipe(
 		prep_time: number
 		cook_time: number
 	}>(
-		`SELECT id, name, directions, prep_time, cook_time FROM components WHERE recipe_id = ?;`,
+		// ORDER BY position is required, not cosmetic: without it SQLite
+		// answers this from the UNIQUE (recipe_id, name) covering index and
+		// returns the components sorted by name, losing the user's ordering.
+		// id is the tiebreaker for rows predating the position column.
+		`SELECT id, name, directions, prep_time, cook_time FROM components WHERE recipe_id = ? ORDER BY position, id;`,
 		[recipeRow.id]
 	)
 
@@ -316,15 +320,19 @@ async function insertRecipeTree(db: Db, recipe: Recipe): Promise<number> {
 		)
 	}
 
-	for (const component of recipe.components) {
+	// The array index is the persisted order — Component carries no position
+	// field of its own, so the list's own ordering stays the single source of
+	// truth and drafts can't hold a stale position.
+	for (const [position, component] of recipe.components.entries()) {
 		const componentResult = await db.runAsync(
-			`INSERT INTO components (recipe_id, name, directions, prep_time, cook_time) VALUES (?, ?, ?, ?, ?);`,
+			`INSERT INTO components (recipe_id, name, directions, prep_time, cook_time, position) VALUES (?, ?, ?, ?, ?, ?);`,
 			[
 				recipeId,
 				component.name,
 				component.directions,
 				component.prep_time,
-				component.cook_time
+				component.cook_time,
+				position
 			]
 		)
 		const componentId = componentResult.lastInsertRowId

@@ -13,6 +13,11 @@ CREATE TABLE IF NOT EXISTS images (
     recipe_id INTEGER NOT NULL REFERENCES recipes(id) ON DELETE CASCADE
 );
 
+-- position is the component's 0-based slot in the recipe's component list,
+-- i.e. the order the user arranged them in. It has to be stored explicitly:
+-- the UNIQUE (recipe_id, name) constraint below creates an index that SQLite
+-- picks as a covering index for "WHERE recipe_id = ?", so an unordered read
+-- comes back sorted by name rather than in insertion order.
 CREATE TABLE IF NOT EXISTS components (
     id         INTEGER PRIMARY KEY AUTOINCREMENT,
     recipe_id  INTEGER NOT NULL REFERENCES recipes(id) ON DELETE CASCADE,
@@ -20,6 +25,7 @@ CREATE TABLE IF NOT EXISTS components (
     directions TEXT NOT NULL,
     prep_time  INTEGER NOT NULL,
     cook_time  INTEGER NOT NULL,
+    position   INTEGER NOT NULL DEFAULT 0,
     UNIQUE (recipe_id, name)
 );
 
