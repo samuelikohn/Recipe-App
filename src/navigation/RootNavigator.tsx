@@ -5,6 +5,7 @@ import { RecipeDetailScreen } from "../screens/RecipeDetail"
 import { RecipeFormScreen } from "../screens/RecipeForm"
 import { RecipeListScreen } from "../screens/RecipeList"
 import { SearchScreen } from "../screens/Search"
+import { SettingsScreen } from "../screens/Settings"
 import { RootStackParamList } from "./types"
 
 const Stack = createNativeStackNavigator<RootStackParamList>()
@@ -33,6 +34,7 @@ export function RootNavigator() {
 					component={ComponentFormScreen}
 				/>
 				<Stack.Screen name="Search" component={SearchScreen} />
+				<Stack.Screen name="Settings" component={SettingsScreen} />
 			</Stack.Navigator>
 		</NavigationContainer>
 	)

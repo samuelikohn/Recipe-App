@@ -1,0 +1,21 @@
+show number of recipes on screen
+settings page
+- text size slider
+- dark mode toggle
+- show number of recipes toggle
+Add total times to recipe preview
+Tags
+- selecting tags makes them dissapear sometimes
+- tags at the top of the recipe list are cut off on the bottom - styling issue?
+- make tags searchable
+- select tags by pressing on recipe cards
+Thumbnail pics are cut off on the bottom - styling issue?
+Add bottom padding on components on RecipeForm
+Add right padding on units on recipe detail screen
+Add right padding on direction numbers on edit component screen
+Can reorder/download images from RecipeForm
+Store images in blob in sqlite
+Share recipes
+- Export pdf/html/text/markdown/json, for copy/email/text msg
+- write to binary file
+- import from binary file, validate schema
