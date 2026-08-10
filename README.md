@@ -1,4 +1,12 @@
-auto scroll to above keyboard - just below keyboard, not quite high enough - CHECK
-persistent component reordering - CHECK
 garbage collection
-on enter direction, move cursor to next step - CHECK
+show number of recipes on screen
+settings page
+- text size slider
+- dark mode toggle
+- show number of recipes toggle
+Async issues with text field in reorderable components
+- cursor moved back
+- autocorrect isn't responsive
+- letters are sometimes dropped
+Add total times to recipe preview
+

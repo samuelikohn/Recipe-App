@@ -35,6 +35,17 @@ export function ComponentSection({ component, servingsMultiplier = 1 }: Props) {
 				</Text>
 			) : null}
 
+			{component.equipment.length > 0 ? (
+				<View style={styles.section}>
+					<Text style={styles.sectionHeader}>Equipment</Text>
+					<View style={styles.equipmentRow}>
+						{component.equipment.map((item) => (
+							<EquipmentChip key={item} label={item} />
+						))}
+					</View>
+				</View>
+			) : null}
+
 			{component.ingredients.length > 0 ? (
 				<View style={styles.section}>
 					<Text style={styles.sectionHeader}>Ingredients</Text>
@@ -45,17 +56,6 @@ export function ComponentSection({ component, servingsMultiplier = 1 }: Props) {
 							servingsMultiplier={servingsMultiplier}
 						/>
 					))}
-				</View>
-			) : null}
-
-			{component.equipment.length > 0 ? (
-				<View style={styles.section}>
-					<Text style={styles.sectionHeader}>Equipment</Text>
-					<View style={styles.equipmentRow}>
-						{component.equipment.map((item) => (
-							<EquipmentChip key={item} label={item} />
-						))}
-					</View>
 				</View>
 			) : null}
 

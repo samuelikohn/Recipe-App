@@ -254,6 +254,36 @@ export function ComponentFormScreen({
 				</Field>
 			</View>
 
+			<Field label="Equipment">
+				<View style={styles.equipmentRow}>
+					{draft.equipment.map((item) => (
+						<EquipmentChip
+							key={item}
+							label={item}
+							onRemove={() => removeEquipment(item)}
+						/>
+					))}
+				</View>
+				<View style={styles.equipmentAddRow}>
+					<TextInput
+						style={[styles.input, styles.equipmentInput]}
+						value={equipmentDraft}
+						onChangeText={setEquipmentDraft}
+						onSubmitEditing={addEquipment}
+						placeholder="Add equipment"
+						placeholderTextColor={colors.textPlaceholder}
+						returnKeyType="done"
+						blurOnSubmit={false}
+					/>
+					<Pressable
+						onPress={addEquipment}
+						style={styles.equipmentAddBtn}
+					>
+						<Text style={styles.equipmentAddBtnText}>Add</Text>
+					</Pressable>
+				</View>
+			</Field>
+
 			<Field label="Ingredients">
 				{ingredientRows.length > 0 && (
 					<Sortable.Layer>
@@ -289,36 +319,6 @@ export function ComponentFormScreen({
 				<Pressable onPress={addIngredient} style={styles.addButton}>
 					<Text style={styles.addButtonText}>+ Add ingredient</Text>
 				</Pressable>
-			</Field>
-
-			<Field label="Equipment">
-				<View style={styles.equipmentRow}>
-					{draft.equipment.map((item) => (
-						<EquipmentChip
-							key={item}
-							label={item}
-							onRemove={() => removeEquipment(item)}
-						/>
-					))}
-				</View>
-				<View style={styles.equipmentAddRow}>
-					<TextInput
-						style={[styles.input, styles.equipmentInput]}
-						value={equipmentDraft}
-						onChangeText={setEquipmentDraft}
-						onSubmitEditing={addEquipment}
-						placeholder="Add equipment"
-						placeholderTextColor={colors.textPlaceholder}
-						returnKeyType="done"
-						blurOnSubmit={false}
-					/>
-					<Pressable
-						onPress={addEquipment}
-						style={styles.equipmentAddBtn}
-					>
-						<Text style={styles.equipmentAddBtnText}>Add</Text>
-					</Pressable>
-				</View>
 			</Field>
 
 			<Field label="Directions">
