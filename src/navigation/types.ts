@@ -24,6 +24,7 @@ export type RootStackParamList = {
 		onSubmit: (component: Component) => void
 	}
 	Search: undefined
+	Settings: undefined
 }
 
 export type ScreenProps<T extends keyof RootStackParamList> =

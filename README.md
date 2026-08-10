@@ -1,4 +1,3 @@
-garbage collection
 show number of recipes on screen
 settings page
 - text size slider

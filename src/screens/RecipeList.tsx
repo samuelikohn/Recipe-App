@@ -2,6 +2,7 @@ import { useLayoutEffect, useMemo, useState } from "react"
 import {
 	ActivityIndicator,
 	FlatList,
+	Modal,
 	Pressable,
 	ScrollView,
 	StyleSheet,
@@ -19,10 +20,11 @@ import { colors } from "../theme/colors"
 /**
  * Root of the app: full recipe list with a tag-filter chip row above it.
  * Tag chips filter with AND semantics (see useRecipes). The header adds
- * `+` (new recipe) and `⌕` (search) buttons on the right.
+ * `+` (new recipe), `⌕` (search), and `⋮` (kebab menu) buttons on the right.
  */
 export function RecipeListScreen({ navigation }: ScreenProps<"RecipeList">) {
 	const [selectedTags, setSelectedTags] = useState<string[]>([])
+	const [menuVisible, setMenuVisible] = useState(false)
 	const insets = useSafeAreaInsets()
 	const { recipes, loading, error } = useRecipes(selectedTags)
 
@@ -58,6 +60,13 @@ export function RecipeListScreen({ navigation }: ScreenProps<"RecipeList">) {
 						style={styles.headerButton}
 					>
 						<Text style={styles.headerButtonText}>＋</Text>
+					</Pressable>
+					<Pressable
+						onPress={() => setMenuVisible(true)}
+						hitSlop={8}
+						style={styles.headerButton}
+					>
+						<Text style={styles.headerButtonText}>⋮</Text>
 					</Pressable>
 				</View>
 			)
@@ -134,6 +143,30 @@ export function RecipeListScreen({ navigation }: ScreenProps<"RecipeList">) {
 					)}
 				/>
 			)}
+
+			<Modal
+				visible={menuVisible}
+				transparent
+				animationType="fade"
+				onRequestClose={() => setMenuVisible(false)}
+			>
+				<Pressable
+					style={styles.menuOverlay}
+					onPress={() => setMenuVisible(false)}
+				>
+					<View style={[styles.menu, { top: insets.top + 48 }]}>
+						<Pressable
+							style={styles.menuItem}
+							onPress={() => {
+								setMenuVisible(false)
+								navigation.navigate("Settings")
+							}}
+						>
+							<Text style={styles.menuItemText}>Settings</Text>
+						</Pressable>
+					</View>
+				</Pressable>
+			</Modal>
 		</View>
 	)
 }
@@ -160,5 +193,29 @@ const styles = StyleSheet.create({
 	},
 	loading: {
 		marginTop: 40
+	},
+	menuOverlay: {
+		flex: 1
+	},
+	menu: {
+		position: "absolute",
+		right: 12,
+		backgroundColor: colors.background,
+		borderRadius: 8,
+		paddingVertical: 4,
+		minWidth: 140,
+		shadowColor: "#000",
+		shadowOffset: { width: 0, height: 2 },
+		shadowOpacity: 0.15,
+		shadowRadius: 6,
+		elevation: 4
+	},
+	menuItem: {
+		paddingVertical: 10,
+		paddingHorizontal: 16
+	},
+	menuItemText: {
+		fontSize: 16,
+		color: colors.primary
 	}
 })
