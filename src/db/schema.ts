@@ -76,3 +76,88 @@ CREATE TABLE IF NOT EXISTS component_equipment (
     PRIMARY KEY (component_id, equipment)
 );
 `
+
+/**
+ * Garbage-collection triggers for the shared master tables.
+ *
+ * ingredients/equipment/tags are shared master data — many recipes reuse
+ * "flour", "whisk", "vegan" — so they can't hang off a recipe with
+ * ON DELETE CASCADE. Instead each junction table gets an AFTER DELETE trigger
+ * that drops the master row once nothing references it anymore. The trigger
+ * fires whether the junction row went away from an explicit app delete or from
+ * an FK cascade, so deleting a recipe collects everything it was the last user
+ * of, two cascade levels down (recipes -> components -> component_ingredients).
+ *
+ * Ingredients are reachable from two junction tables (recipe-level and
+ * component-level lines), so both triggers check both tables before deleting
+ * — an ingredient listed on the recipe itself must survive the deletion of a
+ * component that also used it.
+ *
+ * Run this AFTER the migrations in client.ts, never as part of SQL_SCHEMA. A
+ * table rebuild (see migrateComponentIngredientsKey) is fatal with these
+ * installed: DROP TABLE silently takes that table's own triggers with it, and
+ * the following ALTER TABLE ... RENAME re-parses the whole schema, which fails
+ * outright on any surviving trigger that still references the dropped name
+ * ("no such table: main.component_ingredients"). SQL_GC_DROP_TRIGGERS clears
+ * them before the migrations for exactly that reason.
+ */
+export const SQL_GC_DROP_TRIGGERS = `
+DROP TRIGGER IF EXISTS trg_gc_ingredients_component;
+DROP TRIGGER IF EXISTS trg_gc_ingredients_recipe;
+DROP TRIGGER IF EXISTS trg_gc_equipment;
+DROP TRIGGER IF EXISTS trg_gc_tags;
+`
+
+export const SQL_GC_TRIGGERS = `
+CREATE TRIGGER IF NOT EXISTS trg_gc_ingredients_component
+AFTER DELETE ON component_ingredients
+BEGIN
+    DELETE FROM ingredients
+    WHERE name = OLD.ingredient
+      AND NOT EXISTS (SELECT 1 FROM component_ingredients WHERE ingredient = OLD.ingredient)
+      AND NOT EXISTS (SELECT 1 FROM recipe_ingredients WHERE ingredient = OLD.ingredient);
+END;
+
+CREATE TRIGGER IF NOT EXISTS trg_gc_ingredients_recipe
+AFTER DELETE ON recipe_ingredients
+BEGIN
+    DELETE FROM ingredients
+    WHERE name = OLD.ingredient
+      AND NOT EXISTS (SELECT 1 FROM component_ingredients WHERE ingredient = OLD.ingredient)
+      AND NOT EXISTS (SELECT 1 FROM recipe_ingredients WHERE ingredient = OLD.ingredient);
+END;
+
+CREATE TRIGGER IF NOT EXISTS trg_gc_equipment
+AFTER DELETE ON component_equipment
+BEGIN
+    DELETE FROM equipment
+    WHERE name = OLD.equipment
+      AND NOT EXISTS (SELECT 1 FROM component_equipment WHERE equipment = OLD.equipment);
+END;
+
+CREATE TRIGGER IF NOT EXISTS trg_gc_tags
+AFTER DELETE ON recipe_tags
+BEGIN
+    DELETE FROM tags
+    WHERE name = OLD.tag
+      AND NOT EXISTS (SELECT 1 FROM recipe_tags WHERE tag = OLD.tag);
+END;
+`
+
+/**
+ * One-off sweep for master rows orphaned before the triggers above existed.
+ * The triggers keep the tables clean going forward; this catches the backlog
+ * in databases written by earlier builds. Guarded by a SELECT in client.ts so
+ * a clean database doesn't take a write on every launch.
+ */
+export const SQL_GC_SWEEP = `
+DELETE FROM ingredients
+WHERE name NOT IN (SELECT ingredient FROM component_ingredients)
+  AND name NOT IN (SELECT ingredient FROM recipe_ingredients);
+
+DELETE FROM equipment
+WHERE name NOT IN (SELECT equipment FROM component_equipment);
+
+DELETE FROM tags
+WHERE name NOT IN (SELECT tag FROM recipe_tags);
+`

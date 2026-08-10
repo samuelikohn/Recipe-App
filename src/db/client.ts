@@ -1,5 +1,10 @@
 import * as SQLite from "expo-sqlite"
-import { SQL_SCHEMA } from "./schema"
+import {
+	SQL_GC_DROP_TRIGGERS,
+	SQL_GC_SWEEP,
+	SQL_GC_TRIGGERS,
+	SQL_SCHEMA
+} from "./schema"
 
 const DB_NAME = "recipes.db"
 
@@ -12,12 +17,14 @@ let dbInstance: SQLite.SQLiteDatabase | null = null
  * must be set on EVERY new connection — SQLite does not persist pragma
  * settings inside the database file itself:
  *  - foreign_keys=ON:       without it, ON DELETE CASCADE is silently a no-op
- *  - recursive_triggers=ON: without it, the GC triggers in schema.ts won't
- *                           fire when a delete happens via cascade rather
- *                           than a direct statement against that table
- *                           (e.g. deleting a recipe cascades into
- *                           component_ingredients, which should then fire
- *                           trg_gc_ingredients)
+ *  - recursive_triggers=ON: the GC triggers in schema.ts have to fire when a
+ *                           junction row is removed by a cascade rather than
+ *                           by a direct statement (deleting a recipe cascades
+ *                           into component_ingredients, which should then fire
+ *                           trg_gc_ingredients_component). Current SQLite
+ *                           builds do that regardless of this pragma, but it
+ *                           was required historically and expo-sqlite pins its
+ *                           own SQLite version, so leave it on.
  */
 export async function getDb(): Promise<SQLite.SQLiteDatabase> {
 	if (dbInstance) return dbInstance
@@ -26,10 +33,39 @@ export async function getDb(): Promise<SQLite.SQLiteDatabase> {
 	await db.execAsync("PRAGMA foreign_keys = ON;")
 	await db.execAsync("PRAGMA recursive_triggers = ON;")
 	await db.execAsync(SQL_SCHEMA)
+	// The GC triggers bracket the migrations rather than living in SQL_SCHEMA:
+	// a migration that rebuilds a table can't run while a trigger references
+	// it (see the note in schema.ts), so they come down first and go back up
+	// against the final migrated shape.
+	await db.execAsync(SQL_GC_DROP_TRIGGERS)
 	await migrateSchema(db)
+	await db.execAsync(SQL_GC_TRIGGERS)
+	await sweepOrphans(db)
 
 	dbInstance = db
 	return db
+}
+
+/**
+ * Clears master rows that were orphaned before the GC triggers were wired up.
+ * From here on the triggers keep the tables clean as recipes are deleted, so
+ * this is a no-op on every launch after the first — hence the count check
+ * before writing anything.
+ */
+async function sweepOrphans(db: SQLite.SQLiteDatabase): Promise<void> {
+	const row = await db.getFirstAsync<{ orphans: number }>(`
+        SELECT
+            (SELECT COUNT(*) FROM ingredients
+             WHERE name NOT IN (SELECT ingredient FROM component_ingredients)
+               AND name NOT IN (SELECT ingredient FROM recipe_ingredients))
+          + (SELECT COUNT(*) FROM equipment
+             WHERE name NOT IN (SELECT equipment FROM component_equipment))
+          + (SELECT COUNT(*) FROM tags
+             WHERE name NOT IN (SELECT tag FROM recipe_tags)) AS orphans;
+    `)
+	if (!row || row.orphans === 0) return
+
+	await db.execAsync(SQL_GC_SWEEP)
 }
 
 /**
