@@ -1,8 +1,9 @@
 import { ReactNode, useState } from "react"
-import { Pressable, StyleSheet, Text, TextInput, View } from "react-native"
+import { Pressable, StyleSheet, Text, View } from "react-native"
 import { Ingredient } from "../models/types"
 import { colors } from "../theme/colors"
 import { fontSize } from "../theme/typography"
+import { SortableTextInput } from "./SortableTextInput"
 
 type Props = {
 	ingredient: Ingredient
@@ -12,8 +13,10 @@ type Props = {
 }
 
 /**
- * One editable ingredient row. Fully controlled by the parent except for
- * amount text, which preserves intermediate decimal input like "1.".
+ * One editable ingredient row. The parent owns the values, but the fields are
+ * SortableTextInputs because these rows live inside a Sortable.Grid, which
+ * delivers prop updates a commit late. Amount additionally keeps its own text
+ * so intermediate decimal input like "1." survives the round trip.
  */
 export function IngredientEditor({
 	ingredient,
@@ -48,7 +51,7 @@ export function IngredientEditor({
 				{dragHandle}
 				<View style={styles.fields}>
 					<View style={styles.row}>
-						<TextInput
+						<SortableTextInput
 							style={[styles.input, styles.name]}
 							value={ingredient.name}
 							onChangeText={(name) =>
@@ -67,7 +70,7 @@ export function IngredientEditor({
 						</Pressable>
 					</View>
 					<View style={styles.row}>
-						<TextInput
+						<SortableTextInput
 							style={[styles.input, styles.amount]}
 							value={amountText}
 							onChangeText={updateAmount}
@@ -75,7 +78,7 @@ export function IngredientEditor({
 							placeholderTextColor={colors.textPlaceholder}
 							keyboardType="decimal-pad"
 						/>
-						<TextInput
+						<SortableTextInput
 							style={[styles.input, styles.unit]}
 							value={ingredient.unit}
 							onChangeText={(unit) =>
@@ -86,7 +89,7 @@ export function IngredientEditor({
 							autoCapitalize="none"
 							autoCorrect={false}
 						/>
-						<TextInput
+						<SortableTextInput
 							style={[styles.input, styles.prep]}
 							value={ingredient.prep}
 							onChangeText={(prep) =>

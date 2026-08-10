@@ -14,6 +14,7 @@ import { fontSize, fontWeight } from "../theme/typography"
 import { joinDirectionSteps, splitDirectionSteps } from "../utils/directions"
 import { DragHandle } from "./DragHandle"
 import { useScrollableRef } from "./ScrollableRefContext"
+import { SortableTextInput } from "./SortableTextInput"
 
 type Props = {
 	directions: string
@@ -98,7 +99,7 @@ export function DirectionsEditor({ directions, onChange }: Props) {
 						<View style={styles.row}>
 							<DragHandle />
 							<Text style={styles.stepNumber}>{index + 1}.</Text>
-							<TextInput
+							<SortableTextInput
 								ref={(input) => {
 									if (input) {
 										inputRefs.current[item.key] = input
