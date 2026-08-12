@@ -162,7 +162,7 @@ const styles = StyleSheet.create({
 		// rows are absolutely positioned.
 	},
 	stepNumber: {
-		width: 20,
+		width: 28,
 		marginTop: 10,
 		fontSize: fontSize.input,
 		fontWeight: fontWeight.semibold,

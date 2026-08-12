@@ -12,10 +12,10 @@ Tags
 Thumbnail pics are cut off on the bottom - styling issue?
 Add bottom padding on components on RecipeForm
 Add right padding on units on recipe detail screen
-Add right padding on direction numbers on edit component screen
 Can reorder/download images from RecipeForm
 Store images in blob in sqlite
 Share recipes
 - Export pdf/html/text/markdown/json, for copy/email/text msg
 - write to binary file
 - import from binary file, validate schema
+ComponentForm.props.route.params.onSubmit -> non-serializable, fix warning
