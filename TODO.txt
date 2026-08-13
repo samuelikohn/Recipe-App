@@ -10,7 +10,6 @@ Tags
 - make tags searchable
 - select tags by pressing on recipe cards
 Thumbnail pics are cut off on the bottom - styling issue?
-Add bottom padding on components on RecipeForm
 Add right padding on units on recipe detail screen
 Can reorder/download images from RecipeForm
 Store images in blob in sqlite
@@ -19,3 +18,4 @@ Share recipes
 - write to binary file
 - import from binary file, validate schema
 ComponentForm.props.route.params.onSubmit -> non-serializable, fix warning
+Pressing enter on a edit directions field doesn't create a new line if on the last line

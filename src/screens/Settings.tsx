@@ -5,7 +5,6 @@ import { ScreenProps } from "../navigation/types"
 import { colors } from "../theme/colors"
 
 export function SettingsScreen({ navigation }: ScreenProps<"Settings">) {
-
 	useLayoutEffect(() => {
 		navigation.setOptions({ title: "Settings" })
 	}, [navigation])

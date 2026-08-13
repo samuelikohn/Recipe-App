@@ -422,6 +422,7 @@ const styles = StyleSheet.create({
 	},
 	addButton: {
 		padding: 12,
+		marginTop: 8,
 		borderRadius: 8,
 		borderWidth: 1,
 		borderColor: colors.primary,
