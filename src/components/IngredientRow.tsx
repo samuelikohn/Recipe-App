@@ -42,6 +42,7 @@ const styles = StyleSheet.create({
 	},
 	amount: {
 		width: 90,
+		paddingRight: 4,
 		fontSize: fontSize.body,
 		fontWeight: fontWeight.semibold,
 		color: colors.textDefault

@@ -10,7 +10,6 @@ Tags
 - make tags searchable
 - select tags by pressing on recipe cards
 Thumbnail pics are cut off on the bottom - styling issue?
-Add right padding on units on recipe detail screen
 Can reorder/download images from RecipeForm
 Store images in blob in sqlite
 Share recipes
