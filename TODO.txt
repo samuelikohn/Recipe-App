@@ -6,7 +6,6 @@ settings page
 Add total times to recipe preview
 Tags
 - selecting tags makes them dissapear sometimes
-- tags at the top of the recipe list are cut off on the bottom - styling issue?
 - make tags searchable
 - select tags by pressing on recipe cards
 Thumbnail pics are cut off on the bottom - styling issue?
@@ -18,3 +17,6 @@ Share recipes
 - import from binary file, validate schema
 ComponentForm.props.route.params.onSubmit -> non-serializable, fix warning
 Pressing enter on a edit directions field doesn't create a new line if on the last line
+non unique recipt name -> raise proper error message
+non unique component name -> raise proper error message on click component Done
+non unique ingredient message is cut off

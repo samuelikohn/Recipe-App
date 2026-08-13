@@ -59,7 +59,8 @@ const styles = StyleSheet.create({
 	},
 	label: {
 		fontSize: fontSize.meta,
-		color: colors.textDefault
+		color: colors.textDefault,
+		height: 16
 	},
 	labelSelected: {
 		color: colors.primaryOn
