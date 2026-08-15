@@ -1,14 +1,13 @@
-show number of recipes on screen
 settings page
 - text size slider
 - dark mode toggle
-- show number of recipes toggle
+- show number of recipes on screen toggle
 Add total times to recipe preview
 Tags
 - selecting tags makes them dissapear sometimes
 - make tags searchable
 - select tags by pressing on recipe cards
-Thumbnail pics are cut off on the bottom - styling issue?
+Thumbnail pics are cut off on the bottom - styling issue? - only with tags/line wrap -> height style problem
 Can reorder/download images from RecipeForm
 Store images in blob in sqlite
 Share recipes
