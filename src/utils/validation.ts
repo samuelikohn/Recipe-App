@@ -7,7 +7,8 @@ import { Component, Ingredient, Recipe, ingredientKey } from "../models/types"
  * than a bulleted list. Fields are validated as-is; trimming or dedup is
  * the caller's job before calling these.
  */
-export type ValidationResult = { ok: true } | { ok: false; message: string }
+export type ValidationResult =
+	{ ok: true } | { ok: false; title: string; message: string }
 
 /**
  * Rules a Recipe draft must satisfy before RecipeFormScreen persists it.
@@ -26,13 +27,19 @@ export function validateRecipe(
 	>
 ): ValidationResult {
 	if (recipe.name.trim().length === 0) {
-		return { ok: false, message: "Name is required" }
+		return {
+			ok: false,
+			title: "Error Saving Recipe",
+			message: "Name is required"
+		}
 	}
+	// if recipe name isn't unique
 	if (!Number.isFinite(recipe.num_servings) || recipe.num_servings < 1) {
-		return { ok: false, message: "Servings must be at least 1" }
-	}
-	if (recipe.prep_time < 0 || recipe.cook_time < 0) {
-		return { ok: false, message: "Times cannot be negative" }
+		return {
+			ok: false,
+			title: "Error Saving Recipe",
+			message: "Servings must be at least 1"
+		}
 	}
 	const recipeIngredientCheck = validateIngredients(recipe.ingredients)
 	if (!recipeIngredientCheck.ok) return recipeIngredientCheck
@@ -42,6 +49,7 @@ export function validateRecipe(
 		if (!check.ok) {
 			return {
 				ok: false,
+				title: "Error Saving Recipe",
 				message: `Component ${i + 1}: ${check.message}`
 			}
 		}
@@ -65,10 +73,18 @@ export function validateComponent(
 	>
 ): ValidationResult {
 	if (component.name.trim().length === 0) {
-		return { ok: false, message: "Component name is required" }
+		return {
+			ok: false,
+			title: "Error Saving Component",
+			message: "Component name is required"
+		}
 	}
 	if (component.prep_time < 0 || component.cook_time < 0) {
-		return { ok: false, message: "Times cannot be negative" }
+		return {
+			ok: false,
+			title: "Error Saving Component",
+			message: "Times cannot be negative"
+		}
 	}
 	return validateIngredients(component.ingredients)
 }
@@ -80,6 +96,7 @@ function validateIngredients(ingredients: Ingredient[]): ValidationResult {
 		if (!Number.isFinite(ingredient.amount) || ingredient.amount < 0) {
 			return {
 				ok: false,
+				title: "Error Saving Component",
 				message: `Ingredient "${ingredient.name}" has an invalid amount`
 			}
 		}
@@ -87,6 +104,7 @@ function validateIngredients(ingredients: Ingredient[]): ValidationResult {
 		if (seen.has(key)) {
 			return {
 				ok: false,
+				title: "Error Saving Component",
 				message: ingredient.prep.trim()
 					? `Ingredient "${ingredient.name}" is listed twice with the same prep ("${ingredient.prep.trim()}") — combine them or give them different prep`
 					: `Ingredient "${ingredient.name}" is listed twice — combine them or give them different prep`

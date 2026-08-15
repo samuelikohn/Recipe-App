@@ -7,10 +7,10 @@ import {
 	TextInput,
 	View
 } from "react-native"
-import { useSafeAreaInsets } from "react-native-safe-area-context"
 import DraggableFlatList, {
 	ScaleDecorator
 } from "react-native-draggable-flatlist"
+import { useSafeAreaInsets } from "react-native-safe-area-context"
 import { DirectionsEditor } from "../components/DirectionsEditor"
 import { DragHandle } from "../components/DragHandle"
 import { EquipmentChip } from "../components/EquipmentChip"
@@ -133,7 +133,7 @@ export function ComponentFormScreen({
 
 		const check = validateComponent(cleaned)
 		if (!check.ok) {
-			Alert.alert(check.message)
+			Alert.alert(check.title, check.message)
 			return
 		}
 		allowNavigationRef.current = true

@@ -150,7 +150,7 @@ export function RecipeFormScreen({
 
 		const check = validateRecipe(toPersist)
 		if (!check.ok) {
-			Alert.alert(check.message)
+			Alert.alert(check.title, check.message)
 			return
 		}
 
