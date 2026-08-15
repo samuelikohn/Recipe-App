@@ -8,13 +8,14 @@ import {
 	View
 } from "react-native"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
-import Sortable from "react-native-sortables"
+import DraggableFlatList, {
+	ScaleDecorator
+} from "react-native-draggable-flatlist"
 import { DirectionsEditor } from "../components/DirectionsEditor"
 import { DragHandle } from "../components/DragHandle"
 import { EquipmentChip } from "../components/EquipmentChip"
 import { IngredientEditor } from "../components/IngredientEditor"
 import { KeyboardAwareScrollView } from "../components/KeyboardAwareScrollView"
-import { useScrollableRef } from "../components/ScrollableRefContext"
 import { useRowKeys } from "../hooks/useRowKeys"
 import { Component, Ingredient } from "../models/types"
 import { ScreenProps } from "../navigation/types"
@@ -62,7 +63,6 @@ export function ComponentFormScreen({
 	const [initialDraft] = useState<Component>(initial ?? EMPTY_COMPONENT)
 	const [equipmentDraft, setEquipmentDraft] = useState("")
 	const allowNavigationRef = useRef(false)
-	const scrollableRef = useScrollableRef()
 	// Ingredients have no id of their own, so the sortable list needs
 	// synthetic keys kept parallel to draft.ingredients.
 	const ingredientKeys = useRowKeys("component-ingredient")
@@ -156,20 +156,27 @@ export function ComponentFormScreen({
 		}))
 	}
 
-	function updateIngredient(index: number, ingredient: Ingredient) {
-		setDraft((d) => {
-			const next = [...d.ingredients]
-			next[index] = ingredient
-			return { ...d, ingredients: next }
-		})
+	function updateIngredient(
+		index: number | undefined,
+		ingredient: Ingredient
+	) {
+		if (typeof index === "number") {
+			setDraft((d) => {
+				const next = [...d.ingredients]
+				next[index] = ingredient
+				return { ...d, ingredients: next }
+			})
+		}
 	}
 
-	function removeIngredient(index: number) {
-		ingredientKeys.remove(index)
-		setDraft((d) => ({
-			...d,
-			ingredients: d.ingredients.filter((_, i) => i !== index)
-		}))
+	function removeIngredient(index: number | undefined) {
+		if (typeof index === "number") {
+			ingredientKeys.remove(index)
+			setDraft((d) => ({
+				...d,
+				ingredients: d.ingredients.filter((_, i) => i !== index)
+			}))
+		}
 	}
 
 	/**
@@ -286,35 +293,25 @@ export function ComponentFormScreen({
 
 			<Field label="Ingredients">
 				{ingredientRows.length > 0 && (
-					<Sortable.Layer>
-						<Sortable.Grid
-							columns={1}
-							data={ingredientRows}
-							keyExtractor={(row) => row.key}
-							renderItem={({ item, index }) => (
+					<DraggableFlatList
+						data={ingredientRows}
+						keyExtractor={(row) => row.key}
+						renderItem={({ item, getIndex, drag }) => (
+							<ScaleDecorator>
 								<IngredientEditor
 									ingredient={item.ingredient}
-									dragHandle={<DragHandle />}
+									dragHandle={<DragHandle drag={drag} />}
 									onChange={(next) =>
-										updateIngredient(index, next)
+										updateIngredient(getIndex(), next)
 									}
-									onRemove={() => removeIngredient(index)}
+									onRemove={() =>
+										removeIngredient(getIndex())
+									}
 								/>
-							)}
-							onDragEnd={({ data }) => applyIngredientOrder(data)}
-							customHandle
-							hapticsEnabled
-							sortEnabled={ingredientRows.length > 1}
-							scrollableRef={scrollableRef}
-							// No rowGap: IngredientEditor's own
-							// paddingVertical + bottom border already supply
-							// the spacing and separators.
-							activeItemScale={1.02}
-							inactiveItemOpacity={1}
-							itemEntering={null}
-							itemExiting={null}
-						/>
-					</Sortable.Layer>
+							</ScaleDecorator>
+						)}
+						onDragEnd={({ data }) => applyIngredientOrder(data)}
+					/>
 				)}
 				<Pressable onPress={addIngredient} style={styles.addButton}>
 					<Text style={styles.addButtonText}>+ Add ingredient</Text>

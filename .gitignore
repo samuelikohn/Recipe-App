@@ -43,3 +43,4 @@ yarn-error.*
 app-example
 logs.txt
 android
+install.sh

@@ -5,12 +5,6 @@ import { useRef } from "react"
  * ingredient rows (no id), direction steps (plain strings that can repeat or
  * be blank), and unsaved components (all share `id: 0`).
  *
- * react-native-sortables needs a key per row that survives edits and
- * reorders, so the keys live in an array kept parallel to the data array.
- * Callers keep the two aligned by calling `remove` when they delete a row and
- * `applyOrder` when a drag reorders rows; `sync` is the only repair path for
- * drift (first render, or the data changing from outside).
- *
  * Keys are minted from a monotonic counter and never reused, so a removed row
  * can't be confused with a later one that happens to land in the same slot.
  */

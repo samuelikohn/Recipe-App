@@ -22,12 +22,6 @@ type Props = ScrollViewProps & {
 /**
  * react-native-keyboard-controller's KeyboardAwareScrollView, plus the animated
  * ref that nested sortable lists need.
- *
- * The ref is published through ScrollableRefProvider so react-native-sortables
- * can auto-scroll the form while a row is dragged. It has to be a reanimated
- * animated ref because sortables tracks the offset via `useScrollViewOffset`,
- * which resolves the view by tag. That works here because the library forwards
- * its inner Reanimated.ScrollView instance out through the ref.
  */
 export function KeyboardAwareScrollView({
 	children,

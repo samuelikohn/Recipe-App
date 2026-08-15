@@ -7,7 +7,9 @@ import {
 	TextInput,
 	View
 } from "react-native"
-import DraggableFlatList from "react-native-draggable-flatlist"
+import DraggableFlatList, {
+	ScaleDecorator
+} from "react-native-draggable-flatlist"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
 import { DragHandle } from "../components/DragHandle"
 import { EmptyState } from "../components/EmptyState"
@@ -283,37 +285,45 @@ export function RecipeFormScreen({
 					<DraggableFlatList
 						data={componentRows}
 						keyExtractor={(row) => row.key}
-						renderItem={({ item, getIndex }) => (
-							<View style={styles.componentRow}>
-								<DragHandle />
-								<Pressable
-									onPress={() =>
-										openComponentForm(getIndex())
-									}
-									style={styles.componentBody}
-								>
-									<Text style={styles.componentName}>
-										{item.component.name || "(unnamed)"}
-									</Text>
-									<Text style={styles.componentMeta}>
-										{item.component.ingredients.length}{" "}
-										ingredient
-										{item.component.ingredients.length === 1
-											? ""
-											: "s"}
-									</Text>
-								</Pressable>
-								<Pressable
-									onPress={() => removeComponent(getIndex())}
-									hitSlop={8}
-									style={styles.componentRemove}
-								>
-									<Text style={styles.componentRemoveText}>
-										✕
-									</Text>
-								</Pressable>
-							</View>
+						renderItem={({ item, getIndex, drag }) => (
+							<ScaleDecorator>
+								<View style={styles.componentRow}>
+									<DragHandle drag={drag} />
+									<Pressable
+										onPress={() =>
+											openComponentForm(getIndex())
+										}
+										style={styles.componentBody}
+									>
+										<Text style={styles.componentName}>
+											{item.component.name || "(unnamed)"}
+										</Text>
+										<Text style={styles.componentMeta}>
+											{item.component.ingredients.length}{" "}
+											ingredient
+											{item.component.ingredients
+												.length === 1
+												? ""
+												: "s"}
+										</Text>
+									</Pressable>
+									<Pressable
+										onPress={() =>
+											removeComponent(getIndex())
+										}
+										hitSlop={8}
+										style={styles.componentRemove}
+									>
+										<Text
+											style={styles.componentRemoveText}
+										>
+											✕
+										</Text>
+									</Pressable>
+								</View>
+							</ScaleDecorator>
 						)}
+
 						onDragEnd={({ data }) => applyComponentOrder(data)}
 					/>
 				)}
@@ -392,8 +402,8 @@ const styles = StyleSheet.create({
 		borderWidth: 1,
 		borderColor: colors.border,
 		borderRadius: 8,
-		padding: 12
-		// No marginBottom — the grid's rowGap owns the spacing between rows.
+		padding: 12,
+		marginBottom: 8
 	},
 	componentBody: {
 		flex: 1

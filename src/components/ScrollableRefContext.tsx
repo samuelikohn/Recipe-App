@@ -18,8 +18,7 @@ const ScrollableRefContext = createContext<AnimatedScrollViewRef | null>(null)
 
 /**
  * Publishes the enclosing KeyboardAwareScrollView's animated ref so nested
- * sortable lists can find it. react-native-sortables needs it to auto-scroll
- * the form while a row is dragged near the top or bottom edge.
+ * sortable lists can find it.
  *
  * A context rather than a prop because DirectionsEditor sits two levels below
  * the screen root.

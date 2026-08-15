@@ -7,14 +7,14 @@ import {
 	TextInput,
 	View
 } from "react-native"
-import Sortable from "react-native-sortables"
+import DraggableFlatList, {
+	ScaleDecorator
+} from "react-native-draggable-flatlist"
 import { useRowKeys } from "../hooks/useRowKeys"
 import { colors } from "../theme/colors"
 import { fontSize, fontWeight } from "../theme/typography"
 import { joinDirectionSteps, splitDirectionSteps } from "../utils/directions"
 import { DragHandle } from "./DragHandle"
-import { useScrollableRef } from "./ScrollableRefContext"
-import { SortableTextInput } from "./SortableTextInput"
 
 type Props = {
 	directions: string
@@ -36,7 +36,6 @@ type StepRow = {
  * the sortable list needs.
  */
 export function DirectionsEditor({ directions, onChange }: Props) {
-	const scrollableRef = useScrollableRef()
 	const stepKeys = useRowKeys("direction-step")
 	// Keyed by row key rather than index so the refs survive a reorder.
 	const inputRefs = useRef<Record<string, TextInput | null>>({})
@@ -52,29 +51,35 @@ export function DirectionsEditor({ directions, onChange }: Props) {
 	 * multiline so long steps still wrap). On the last step there is nowhere to
 	 * go, so it closes the keyboard.
 	 */
-	function focusNextStep(index: number) {
-		const nextKey = keys[index + 1]
-		const nextInput = nextKey ? inputRefs.current[nextKey] : undefined
-		if (nextInput) {
-			nextInput.focus()
-		} else {
-			Keyboard.dismiss()
+	function focusNextStep(index: number | undefined) {
+		if (typeof index === "number") {
+			const nextKey = keys[index + 1]
+			const nextInput = nextKey ? inputRefs.current[nextKey] : undefined
+			if (nextInput) {
+				nextInput.focus()
+			} else {
+				Keyboard.dismiss()
+			}
 		}
 	}
 
-	function updateStep(index: number, text: string) {
-		const next = [...steps]
-		next[index] = text
-		onChange(joinDirectionSteps(next))
+	function updateStep(index: number | undefined, text: string) {
+		if (typeof index === "number") {
+			const next = [...steps]
+			next[index] = text
+			onChange(joinDirectionSteps(next))
+		}
 	}
 
 	// splitDirectionSteps("") returns [""], so there is always at least one
 	// row. Removing the last remaining step therefore drops to [] and comes
 	// back as [""] on the next render, minting a fresh key and remounting the
 	// single empty row. Harmless, but it looks odd in a debugger.
-	function removeStep(index: number) {
-		stepKeys.remove(index)
-		onChange(joinDirectionSteps(steps.filter((_, i) => i !== index)))
+	function removeStep(index: number | undefined) {
+		if (typeof index === "number") {
+			stepKeys.remove(index)
+			onChange(joinDirectionSteps(steps.filter((_, i) => i !== index)))
+		}
 	}
 
 	function addStep() {
@@ -87,19 +92,27 @@ export function DirectionsEditor({ directions, onChange }: Props) {
 		onChange(joinDirectionSteps(order.map((index) => steps[index])))
 	}
 
+	function incrementIndex(idx: number | undefined): number {
+		if (typeof idx === "number") {
+			return idx + 1
+		} else {
+			return 1
+		}
+	}
+
 	return (
 		<View>
-			<Sortable.Layer>
-				<Sortable.Grid
-					columns={1}
-					rowGap={8}
-					data={rows}
-					keyExtractor={(row) => row.key}
-					renderItem={({ item, index }) => (
+			<DraggableFlatList
+				data={rows}
+				keyExtractor={(row) => row.key}
+				renderItem={({ item, getIndex, drag }) => (
+					<ScaleDecorator>
 						<View style={styles.row}>
-							<DragHandle />
-							<Text style={styles.stepNumber}>{index + 1}.</Text>
-							<SortableTextInput
+							<DragHandle drag={drag} />
+							<Text style={styles.stepNumber}>
+								{incrementIndex(getIndex())}.
+							</Text>
+							<TextInput
 								ref={(input) => {
 									if (input) {
 										inputRefs.current[item.key] = input
@@ -109,43 +122,37 @@ export function DirectionsEditor({ directions, onChange }: Props) {
 								}}
 								style={[styles.input, styles.stepInput]}
 								value={item.step}
-								onChangeText={(text) => updateStep(index, text)}
-								placeholder={`Step ${index + 1}`}
+								onChangeText={(text) =>
+									updateStep(getIndex(), text)
+								}
+								placeholder={`Step ${incrementIndex(getIndex())}`}
 								placeholderTextColor={colors.textPlaceholder}
 								multiline
 								// "submit" keeps the keyboard open and skips the
 								// newline a multiline input would otherwise
 								// insert, so onSubmitEditing can hand focus on.
 								submitBehavior="submit"
-								onSubmitEditing={() => focusNextStep(index)}
+								onSubmitEditing={() =>
+									focusNextStep(getIndex())
+								}
 								returnKeyType={
-									index === rows.length - 1 ? "done" : "next"
+									getIndex() === rows.length - 1
+										? "done"
+										: "next"
 								}
 							/>
 							<Pressable
-								onPress={() => removeStep(index)}
+								onPress={() => removeStep(getIndex())}
 								hitSlop={8}
 								style={styles.removeButton}
 							>
 								<Text style={styles.removeText}>x</Text>
 							</Pressable>
 						</View>
-					)}
-					onDragEnd={({ data }) => applyStepOrder(data)}
-					customHandle
-					hapticsEnabled
-					sortEnabled={rows.length > 1}
-					scrollableRef={scrollableRef}
-					// A multi-line step is much taller than a one-line
-					// neighbour, and the default "center" origin feels
-					// sluggish when dragging a tall row.
-					reorderTriggerOrigin="touch"
-					activeItemScale={1.02}
-					inactiveItemOpacity={1}
-					itemEntering={null}
-					itemExiting={null}
-				/>
-			</Sortable.Layer>
+					</ScaleDecorator>
+				)}
+				onDragEnd={({ data }) => applyStepOrder(data)}
+			/>
 			<Pressable onPress={addStep} style={styles.addButton}>
 				<Text style={styles.addButtonText}>+ Add step</Text>
 			</Pressable>
@@ -156,7 +163,8 @@ export function DirectionsEditor({ directions, onChange }: Props) {
 const styles = StyleSheet.create({
 	row: {
 		flexDirection: "row",
-		alignItems: "flex-start"
+		alignItems: "flex-start",
+		marginBottom: 8
 		// No marginBottom — the grid's rowGap owns the spacing between rows.
 		// A margin on the item root would double-count against it once the
 		// rows are absolutely positioned.

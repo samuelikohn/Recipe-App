@@ -1,27 +1,24 @@
-import { StyleSheet, Text, View } from "react-native"
-import Sortable from "react-native-sortables"
+import { StyleSheet, Text, TouchableOpacity, View } from "react-native"
 import { colors } from "../theme/colors"
 import { fontSize, fontWeight } from "../theme/typography"
 
 /**
- * Grip that starts a hold-and-drag reorder. Must be rendered inside a
- * react-native-sortables item whose container sets `customHandle` — the drag
- * gesture then lives on the handle alone, so the TextInputs and remove
- * buttons filling the rest of the row keep behaving normally.
- *
- * Sortable.Handle only accepts `style`/`mode`/`children`, so the
- * accessibility props go on an inner View.
+ * Grip that starts a hold-and-drag reorder.
  */
-export function DragHandle() {
+export function DragHandle({ drag }: { drag: () => void }) {
 	return (
-		<Sortable.Handle style={styles.handle}>
+		<TouchableOpacity
+			style={styles.handle}
+			onLongPress={drag}
+			delayLongPress={500}
+		>
 			<View
 				accessibilityLabel="Drag to reorder"
 				accessibilityRole="adjustable"
 			>
-				<Text style={styles.handleText}>|||</Text>
+				<Text style={styles.handleText}>☰</Text>
 			</View>
-		</Sortable.Handle>
+		</TouchableOpacity>
 	)
 }
 
