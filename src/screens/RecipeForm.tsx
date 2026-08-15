@@ -7,13 +7,12 @@ import {
 	TextInput,
 	View
 } from "react-native"
+import DraggableFlatList from "react-native-draggable-flatlist"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
-import Sortable from "react-native-sortables"
 import { DragHandle } from "../components/DragHandle"
 import { EmptyState } from "../components/EmptyState"
 import { ImagePickerGrid } from "../components/ImagePickerGrid"
 import { KeyboardAwareScrollView } from "../components/KeyboardAwareScrollView"
-import { useScrollableRef } from "../components/ScrollableRefContext"
 import { TagInput } from "../components/TagInput"
 import { createRecipe, updateRecipe } from "../db/repositories/recipes"
 import { useRecipe } from "../hooks/useRecipe"
@@ -60,7 +59,6 @@ export function RecipeFormScreen({
 	const [initialized, setInitialized] = useState(false)
 	const [saving, setSaving] = useState(false)
 	const allowNavigationRef = useRef(false)
-	const scrollableRef = useScrollableRef()
 	// Unsaved components all carry id 0, so the sortable list needs synthetic
 	// keys kept parallel to draft.components.
 	const componentKeys = useRowKeys("recipe-component")
@@ -181,27 +179,37 @@ export function RecipeFormScreen({
 		}))
 	}
 
-	function openComponentForm(index: number) {
-		const initial = index >= 0 ? draft.components[index] : null
+	function openComponentForm(index: number | undefined) {
+		let initial
+		if (typeof index === "undefined") {
+			initial = null
+		} else {
+			initial = index >= 0 ? draft.components[index] : null
+		}
 		navigation.navigate("ComponentForm", {
 			initial,
 			onSubmit: (component) => {
 				setDraft((d) => {
 					const next = [...d.components]
-					if (index >= 0) next[index] = component
-					else next.push(component)
+					if (typeof index === "number" && index >= 0) {
+						next[index] = component
+					} else {
+						next.push(component)
+					}
 					return { ...d, components: next }
 				})
 			}
 		})
 	}
 
-	function removeComponent(index: number) {
-		componentKeys.remove(index)
-		setDraft((d) => ({
-			...d,
-			components: d.components.filter((_, i) => i !== index)
-		}))
+	function removeComponent(index: number | undefined) {
+		if (typeof index === "number") {
+			componentKeys.remove(index)
+			setDraft((d) => ({
+				...d,
+				components: d.components.filter((_, i) => i !== index)
+			}))
+		}
 	}
 
 	/**
@@ -272,55 +280,42 @@ export function RecipeFormScreen({
 
 			<Field label="Components">
 				{componentRows.length > 0 && (
-					<Sortable.Layer>
-						<Sortable.Grid
-							columns={1}
-							rowGap={8}
-							data={componentRows}
-							keyExtractor={(row) => row.key}
-							renderItem={({ item, index }) => (
-								<View style={styles.componentRow}>
-									<DragHandle />
-									<Pressable
-										onPress={() => openComponentForm(index)}
-										style={styles.componentBody}
-									>
-										<Text style={styles.componentName}>
-											{item.component.name || "(unnamed)"}
-										</Text>
-										<Text style={styles.componentMeta}>
-											{item.component.ingredients.length}{" "}
-											ingredient
-											{item.component.ingredients
-												.length === 1
-												? ""
-												: "s"}
-										</Text>
-									</Pressable>
-									<Pressable
-										onPress={() => removeComponent(index)}
-										hitSlop={8}
-										style={styles.componentRemove}
-									>
-										<Text
-											style={styles.componentRemoveText}
-										>
-											✕
-										</Text>
-									</Pressable>
-								</View>
-							)}
-							onDragEnd={({ data }) => applyComponentOrder(data)}
-							customHandle
-							hapticsEnabled
-							sortEnabled={componentRows.length > 1}
-							scrollableRef={scrollableRef}
-							activeItemScale={1.02}
-							inactiveItemOpacity={1}
-							itemEntering={null}
-							itemExiting={null}
-						/>
-					</Sortable.Layer>
+					<DraggableFlatList
+						data={componentRows}
+						keyExtractor={(row) => row.key}
+						renderItem={({ item, getIndex }) => (
+							<View style={styles.componentRow}>
+								<DragHandle />
+								<Pressable
+									onPress={() =>
+										openComponentForm(getIndex())
+									}
+									style={styles.componentBody}
+								>
+									<Text style={styles.componentName}>
+										{item.component.name || "(unnamed)"}
+									</Text>
+									<Text style={styles.componentMeta}>
+										{item.component.ingredients.length}{" "}
+										ingredient
+										{item.component.ingredients.length === 1
+											? ""
+											: "s"}
+									</Text>
+								</Pressable>
+								<Pressable
+									onPress={() => removeComponent(getIndex())}
+									hitSlop={8}
+									style={styles.componentRemove}
+								>
+									<Text style={styles.componentRemoveText}>
+										✕
+									</Text>
+								</Pressable>
+							</View>
+						)}
+						onDragEnd={({ data }) => applyComponentOrder(data)}
+					/>
 				)}
 				<Pressable
 					onPress={() => openComponentForm(-1)}

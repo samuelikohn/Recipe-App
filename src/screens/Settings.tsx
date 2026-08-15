@@ -1,6 +1,5 @@
 import { useLayoutEffect } from "react"
-import { StyleSheet, View } from "react-native"
-import { useSafeAreaInsets } from "react-native-safe-area-context"
+import { StyleSheet, Switch, View } from "react-native"
 import { ScreenProps } from "../navigation/types"
 import { colors } from "../theme/colors"
 
@@ -9,7 +8,13 @@ export function SettingsScreen({ navigation }: ScreenProps<"Settings">) {
 		navigation.setOptions({ title: "Settings" })
 	}, [navigation])
 
-	return <View style={styles.container}></View>
+	function toggleTheme(isDarkTheme: boolean) {}
+
+	return (
+		<View style={styles.container}>
+			<Switch onValueChange={toggleTheme} />
+		</View>
+	)
 }
 
 const styles = StyleSheet.create({
