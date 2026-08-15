@@ -30,19 +30,34 @@ export function validateRecipe(
 		return {
 			ok: false,
 			title: "Error Saving Recipe",
-			message: "Name is required"
+			message: "Recipe name is required"
 		}
 	}
-	// if recipe name isn't unique
+
 	if (!Number.isFinite(recipe.num_servings) || recipe.num_servings < 1) {
 		return {
 			ok: false,
 			title: "Error Saving Recipe",
-			message: "Servings must be at least 1"
+			message: "Number of servings must be at least 1"
 		}
 	}
+
+	const componentNames = recipe.components.map(
+		(component) => component.name
+	)
+	if (componentNames.length !== new Set(componentNames).size) {
+		return {
+			ok: false,
+			title: "Error Saving Recipe",
+			message:
+				"Component names must be unique — at least 2 components share the same name."
+		}
+	}
+
 	const recipeIngredientCheck = validateIngredients(recipe.ingredients)
-	if (!recipeIngredientCheck.ok) return recipeIngredientCheck
+	if (!recipeIngredientCheck.ok) {
+		return recipeIngredientCheck
+	}
 
 	for (let i = 0; i < recipe.components.length; i++) {
 		const check = validateComponent(recipe.components[i])

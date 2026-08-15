@@ -164,10 +164,20 @@ export function RecipeFormScreen({
 			allowNavigationRef.current = true
 			navigation.goBack()
 		} catch (err) {
-			Alert.alert(
-				"Save failed",
-				err instanceof Error ? err.message : String(err)
-			)
+			if (
+				err instanceof Error &&
+				err.message.includes("UNIQUE constraint failed: recipes.name")
+			) {
+				Alert.alert(
+					"Error Saving Recipe",
+					`Recipe name must be unique — another recipe named \"${toPersist.name}\" already exists.`
+				)
+			} else {
+				Alert.alert(
+					"Error Saving Recipe",
+					`Uncaught error: ${err instanceof Error ? err.message : String(err)}`
+				)
+			}
 		} finally {
 			setSaving(false)
 		}

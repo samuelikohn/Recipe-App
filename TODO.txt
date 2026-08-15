@@ -16,6 +16,3 @@ Share recipes
 - import from binary file, validate schema
 ComponentForm.props.route.params.onSubmit -> non-serializable, fix warning
 Pressing enter on a edit directions field doesn't create a new line if on the last line
-non unique recipt name -> raise proper error message
-non unique component name -> raise proper error message on click component Done
-non unique ingredient message is cut off
