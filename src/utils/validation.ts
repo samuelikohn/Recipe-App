@@ -42,9 +42,7 @@ export function validateRecipe(
 		}
 	}
 
-	const componentNames = recipe.components.map(
-		(component) => component.name
-	)
+	const componentNames = recipe.components.map((component) => component.name)
 	if (componentNames.length !== new Set(componentNames).size) {
 		return {
 			ok: false,
