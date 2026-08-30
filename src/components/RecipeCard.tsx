@@ -72,7 +72,7 @@ const styles = StyleSheet.create({
 	},
 	image: {
 		width: 96,
-		height: 96
+		objectFit: "cover"
 	},
 	placeholder: {
 		backgroundColor: colors.surfaceMuted,
