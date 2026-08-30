@@ -2,7 +2,6 @@ settings page
 - text size slider
 - dark mode toggle
 - show number of recipes on screen toggle
-Add total times to recipe preview
 Tags
 - selecting tags makes them dissapear sometimes
 - make tags searchable
@@ -17,3 +16,9 @@ Move ingredients focus to next field on click done
 draggable text fields are not keyboard aware
 auto scroll on drag towards edge of screen isn't working - is that a feature? or hallucination
 if equipment is empty, close on check done
+
+"""
+src\screens\ComponentForm.tsx and src\components\DirectionsEditor.tsx have instances of text input fields inside of a
+  DraggableFlatList component. src\components\KeyboardAwareScrollView.tsx does not work for these fields; the view does not
+  autoscroll when an input inside a draggable flat list is selected.
+"""
