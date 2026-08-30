@@ -2,6 +2,8 @@ export type RecipeSummary = {
 	name: string
 	num_servings: number
 	coverImage: string | null
+	prep_time: number
+	cook_time: number
 	tags: string[]
 }
 

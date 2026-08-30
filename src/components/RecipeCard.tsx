@@ -2,6 +2,7 @@ import { Image, Pressable, StyleSheet, Text, View } from "react-native"
 import { RecipeSummary } from "../models/types"
 import { colors } from "../theme/colors"
 import { fontSize, fontWeight } from "../theme/typography"
+import { formatDuration } from "../utils/format"
 import { TagChip } from "./TagChip"
 
 type Props = {
@@ -18,6 +19,7 @@ type Props = {
 export function RecipeCard({ recipe, onPress }: Props) {
 	const visibleTags = recipe.tags.slice(0, 3)
 	const extra = recipe.tags.length - visibleTags.length
+	const totalTime = recipe.prep_time + recipe.cook_time
 
 	return (
 		<Pressable
@@ -50,6 +52,13 @@ export function RecipeCard({ recipe, onPress }: Props) {
 							<Text style={styles.moreTags}>+{extra}</Text>
 						) : null}
 					</View>
+				) : null}
+				{totalTime > 0 ? (
+					<Text style={styles.timing}>
+						Prep {formatDuration(recipe.prep_time)} · Cook{" "}
+						{formatDuration(recipe.cook_time)} · Total{" "}
+						{formatDuration(totalTime)}
+					</Text>
 				) : null}
 			</View>
 		</Pressable>
@@ -94,6 +103,11 @@ const styles = StyleSheet.create({
 		color: colors.textBody
 	},
 	servings: {
+		marginTop: 2,
+		fontSize: fontSize.meta,
+		color: colors.textMuted
+	},
+	timing: {
 		marginTop: 2,
 		fontSize: fontSize.meta,
 		color: colors.textMuted

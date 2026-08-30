@@ -20,10 +20,14 @@ export async function getRecipeSummaries(): Promise<RecipeSummary[]> {
 		name: string
 		num_servings: number
 		coverImage: string | null
+		prep_time: number
+		cook_time: number
 		tags: string | null
 	}>(
 		`SELECT r.id, r.name, r.num_servings,
             (SELECT filepath FROM images WHERE recipe_id = r.id LIMIT 1) AS coverImage,
+            COALESCE((SELECT SUM(prep_time) FROM components WHERE recipe_id = r.id), 0) AS prep_time,
+            COALESCE((SELECT SUM(cook_time) FROM components WHERE recipe_id = r.id), 0) AS cook_time,
             (SELECT GROUP_CONCAT(tag, ',') FROM recipe_tags WHERE recipe_id = r.id) AS tags
      FROM recipes r
      ORDER BY r.name COLLATE NOCASE;`
@@ -46,10 +50,14 @@ export async function searchRecipes(query: string): Promise<RecipeSummary[]> {
 		name: string
 		num_servings: number
 		coverImage: string | null
+		prep_time: number
+		cook_time: number
 		tags: string | null
 	}>(
 		`SELECT DISTINCT r.id, r.name, r.num_servings,
             (SELECT filepath FROM images WHERE recipe_id = r.id LIMIT 1) AS coverImage,
+            COALESCE((SELECT SUM(prep_time) FROM components WHERE recipe_id = r.id), 0) AS prep_time,
+            COALESCE((SELECT SUM(cook_time) FROM components WHERE recipe_id = r.id), 0) AS cook_time,
             (SELECT GROUP_CONCAT(tag, ',') FROM recipe_tags WHERE recipe_id = r.id) AS tags
      FROM recipes r
      LEFT JOIN recipe_tags rt ON rt.recipe_id = r.id
@@ -167,12 +175,16 @@ function toSummary(row: {
 	name: string
 	num_servings: number
 	coverImage: string | null
+	prep_time: number
+	cook_time: number
 	tags: string | null
 }): RecipeSummary {
 	return {
 		name: row.name,
 		num_servings: row.num_servings,
 		coverImage: row.coverImage,
+		prep_time: row.prep_time,
+		cook_time: row.cook_time,
 		tags: row.tags ? row.tags.split(",") : []
 	}
 }
