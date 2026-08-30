@@ -14,13 +14,14 @@ import { useSafeAreaInsets } from "react-native-safe-area-context"
 import { DirectionsEditor } from "../components/DirectionsEditor"
 import { DragHandle } from "../components/DragHandle"
 import { EquipmentChip } from "../components/EquipmentChip"
+import Field from "../components/Field"
 import { IngredientEditor } from "../components/IngredientEditor"
 import { KeyboardAwareScrollView } from "../components/KeyboardAwareScrollView"
 import { useRowKeys } from "../hooks/useRowKeys"
 import { Component, Ingredient } from "../models/types"
 import { ScreenProps } from "../navigation/types"
 import { colors } from "../theme/colors"
-import { fontSize, fontWeight, typography } from "../theme/typography"
+import { fontSize, fontWeight } from "../theme/typography"
 import { joinDirectionSteps, splitDirectionSteps } from "../utils/directions"
 import { validateComponent } from "../utils/validation"
 
@@ -330,23 +331,6 @@ export function ComponentFormScreen({
 	)
 }
 
-function Field({
-	label,
-	children,
-	style
-}: {
-	label: string
-	children: React.ReactNode
-	style?: object
-}) {
-	return (
-		<View style={[styles.field, style]}>
-			<Text style={styles.fieldLabel}>{label}</Text>
-			{children}
-		</View>
-	)
-}
-
 const styles = StyleSheet.create({
 	container: {
 		flex: 1,
@@ -362,14 +346,6 @@ const styles = StyleSheet.create({
 		fontSize: fontSize.input,
 		color: colors.primary,
 		fontWeight: fontWeight.semibold
-	},
-	field: {
-		marginBottom: 20
-	},
-	fieldLabel: {
-		...typography.sectionHeader,
-		color: colors.textMuted,
-		marginBottom: 6
 	},
 	input: {
 		borderWidth: 1,

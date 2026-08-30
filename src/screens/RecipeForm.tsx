@@ -13,6 +13,7 @@ import DraggableFlatList, {
 import { useSafeAreaInsets } from "react-native-safe-area-context"
 import { DragHandle } from "../components/DragHandle"
 import { EmptyState } from "../components/EmptyState"
+import Field from "../components/Field"
 import { ImagePickerGrid } from "../components/ImagePickerGrid"
 import { KeyboardAwareScrollView } from "../components/KeyboardAwareScrollView"
 import { TagInput } from "../components/TagInput"
@@ -22,7 +23,7 @@ import { useRowKeys } from "../hooks/useRowKeys"
 import { Component } from "../models/types"
 import { RecipeDraft, ScreenProps } from "../navigation/types"
 import { colors } from "../theme/colors"
-import { fontSize, fontWeight, typography } from "../theme/typography"
+import { fontSize, fontWeight } from "../theme/typography"
 import { joinDirectionSteps, splitDirectionSteps } from "../utils/directions"
 import { validateRecipe } from "../utils/validation"
 
@@ -348,23 +349,6 @@ export function RecipeFormScreen({
 	)
 }
 
-function Field({
-	label,
-	children,
-	style
-}: {
-	label: string
-	children: React.ReactNode
-	style?: object
-}) {
-	return (
-		<View style={[styles.field, style]}>
-			<Text style={styles.fieldLabel}>{label}</Text>
-			{children}
-		</View>
-	)
-}
-
 const styles = StyleSheet.create({
 	container: {
 		flex: 1,
@@ -381,20 +365,12 @@ const styles = StyleSheet.create({
 		color: colors.primary,
 		fontWeight: fontWeight.semibold
 	},
-	field: {
-		marginBottom: 20
-	},
 	timingRow: {
 		flexDirection: "row",
 		gap: 12
 	},
 	timingField: {
 		flex: 1
-	},
-	fieldLabel: {
-		...typography.sectionHeader,
-		color: colors.textMuted,
-		marginBottom: 6
 	},
 	input: {
 		borderWidth: 1,
