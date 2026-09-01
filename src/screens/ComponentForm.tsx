@@ -297,6 +297,14 @@ export function ComponentFormScreen({
 					<DraggableFlatList
 						data={ingredientRows}
 						keyExtractor={(row) => row.key}
+						// The list is fully expanded inside the screen's
+						// scroll view, so it never scrolls itself — and it
+						// must be marked non-scrollable so the keyboard
+						// controller attributes focused inputs to the
+						// enclosing KeyboardAwareScrollView (its native
+						// parent-scroll-view lookup skips scroll-disabled
+						// lists) and autoscrolls it.
+						scrollEnabled={false}
 						renderItem={({ item, getIndex, drag }) => (
 							<ScaleDecorator>
 								<IngredientEditor
