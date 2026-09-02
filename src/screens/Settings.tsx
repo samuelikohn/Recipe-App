@@ -1,12 +1,14 @@
-import { useLayoutEffect } from "react"
+import { ReactNode, useLayoutEffect } from "react"
 import { StyleSheet, Switch, Text, View } from "react-native"
+import { usePreferences } from "../hooks/PreferencesProvider"
 import { ScreenProps } from "../navigation/types"
 import { useTheme, useThemedStyles } from "../theme/ThemeProvider"
 import { ThemeColors } from "../theme/colors"
 import { fontSize, typography } from "../theme/typography"
 
 export function SettingsScreen({ navigation }: ScreenProps<"Settings">) {
-	const { mode, colors, isDark, setMode } = useTheme()
+	const { mode, isDark, setMode } = useTheme()
+	const { preferences, setPreference } = usePreferences()
 	const styles = useThemedStyles(makeStyles)
 
 	useLayoutEffect(() => {
@@ -21,30 +23,74 @@ export function SettingsScreen({ navigation }: ScreenProps<"Settings">) {
 
 	return (
 		<View style={styles.container}>
-			<Text style={styles.sectionHeader}>Appearance</Text>
-			<View style={styles.section}>
-				<View style={styles.row}>
-					<View style={styles.rowLabel}>
-						<Text style={styles.rowTitle}>Dark theme</Text>
-						<Text style={styles.rowSubtitle}>
-							{mode === "system"
-								? "Following your device setting"
-								: isDark
-									? "Always on"
-									: "Always off"}
-						</Text>
-					</View>
-					<Switch
-						value={isDark}
-						onValueChange={toggleTheme}
-						trackColor={{
-							false: colors.borderStrong,
-							true: colors.primary
-						}}
-						thumbColor={colors.surface}
-					/>
-				</View>
+			<Section title="Appearance">
+				<ToggleRow
+					title="Dark theme"
+					subtitle={
+						mode === "system"
+							? "Following your device setting"
+							: isDark
+								? "Always on"
+								: "Always off"
+					}
+					value={isDark}
+					onValueChange={toggleTheme}
+				/>
+			</Section>
+
+			<Section title="Recipe list">
+				<ToggleRow
+					title="Show recipe count"
+					subtitle="Put the number of recipes being shown in the header"
+					value={preferences.showRecipeCount}
+					onValueChange={(next) =>
+						setPreference("showRecipeCount", next)
+					}
+				/>
+			</Section>
+		</View>
+	)
+}
+
+/** Labelled group of rows, styled as one banded block. */
+function Section({ title, children }: { title: string; children: ReactNode }) {
+	const styles = useThemedStyles(makeStyles)
+
+	return (
+		<View>
+			<Text style={styles.sectionHeader}>{title}</Text>
+			<View style={styles.section}>{children}</View>
+		</View>
+	)
+}
+
+type ToggleRowProps = {
+	title: string
+	subtitle: string
+	value: boolean
+	onValueChange: (value: boolean) => void
+}
+
+/** One setting: label and explanation on the left, switch on the right. */
+function ToggleRow({ title, subtitle, value, onValueChange }: ToggleRowProps) {
+	const { colors } = useTheme()
+	const styles = useThemedStyles(makeStyles)
+
+	return (
+		<View style={styles.row}>
+			<View style={styles.rowLabel}>
+				<Text style={styles.rowTitle}>{title}</Text>
+				<Text style={styles.rowSubtitle}>{subtitle}</Text>
 			</View>
+			<Switch
+				value={value}
+				onValueChange={onValueChange}
+				trackColor={{
+					false: colors.borderStrong,
+					true: colors.primary
+				}}
+				thumbColor={colors.surface}
+			/>
 		</View>
 	)
 }

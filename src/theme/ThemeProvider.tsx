@@ -1,17 +1,8 @@
-import {
-	createContext,
-	ReactNode,
-	useCallback,
-	useContext,
-	useEffect,
-	useState
-} from "react"
+import { createContext, ReactNode, useContext } from "react"
 import { StyleSheet, useColorScheme } from "react-native"
 import { StatusBar } from "expo-status-bar"
-import { getSetting, setSetting } from "../db/repositories/settings"
+import { usePreferences } from "../hooks/PreferencesProvider"
 import { palettes, ThemeColors, ThemeMode } from "./colors"
-
-const THEME_SETTING_KEY = "theme_mode"
 
 type ThemeContextValue = {
 	/** What the user asked for. "system" means "whatever the OS says". */
@@ -24,60 +15,26 @@ type ThemeContextValue = {
 
 const ThemeContext = createContext<ThemeContextValue | null>(null)
 
-function isThemeMode(value: string | null): value is ThemeMode {
-	return value === "light" || value === "dark" || value === "system"
-}
-
 /**
- * Owns the active color palette and persists the user's choice.
+ * Resolves the stored theme preference into a live palette.
  *
  * Mount this ABOVE DatabaseProvider in the tree — DatabaseProvider's own
  * loading/error screens are themed, so the palette has to exist before it
- * renders. Both providers call getDb() as they mount; that's safe because
- * getDb caches its in-flight promise (see db/client.ts).
- *
- * Children are held back until the stored preference has been read. The wait
- * is the DB open, which DatabaseProvider is blocking on anyway, and it buys
- * a launch with no light-to-dark flash for users who picked dark.
+ * renders — and BELOW PreferencesProvider, which is where the mode is loaded
+ * from and written back to.
  */
 export function ThemeProvider({ children }: { children: ReactNode }) {
 	const systemScheme = useColorScheme()
-	const [mode, setModeState] = useState<ThemeMode>("system")
-	const [loaded, setLoaded] = useState(false)
+	const { preferences, setPreference } = usePreferences()
+	const mode = preferences.themeMode
 
-	useEffect(() => {
-		let cancelled = false
-
-		getSetting(THEME_SETTING_KEY)
-			.then((stored) => {
-				if (cancelled) return
-				if (isThemeMode(stored)) setModeState(stored)
-			})
-			// A preference we can't read isn't worth blocking the app over —
-			// fall through to "system". DatabaseProvider surfaces the error if
-			// the database itself is the problem.
-			.catch(() => {})
-			.finally(() => {
-				if (!cancelled) setLoaded(true)
-			})
-
-		return () => {
-			cancelled = true
-		}
-	}, [])
-
-	const setMode = useCallback((next: ThemeMode) => {
-		// Applied optimistically: the toggle should feel instant, and a failed
-		// write costs the user the preference on next launch, not this one.
-		setModeState(next)
-		setSetting(THEME_SETTING_KEY, next).catch(() => {})
-	}, [])
+	function setMode(next: ThemeMode) {
+		setPreference("themeMode", next)
+	}
 
 	// useColorScheme returns null when the OS scheme is unknown; treat that as
 	// light, matching the palette the app shipped with.
 	const isDark = mode === "system" ? systemScheme === "dark" : mode === "dark"
-
-	if (!loaded) return null
 
 	return (
 		<ThemeContext.Provider

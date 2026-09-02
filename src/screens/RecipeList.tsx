@@ -13,6 +13,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context"
 import { EmptyState } from "../components/EmptyState"
 import { RecipeCard } from "../components/RecipeCard"
 import { TagChip } from "../components/TagChip"
+import { usePreferences } from "../hooks/PreferencesProvider"
 import { useRecipes } from "../hooks/useRecipes"
 import { ScreenProps } from "../navigation/types"
 import { useThemedStyles } from "../theme/ThemeProvider"
@@ -28,7 +29,17 @@ export function RecipeListScreen({ navigation }: ScreenProps<"RecipeList">) {
 	const [menuVisible, setMenuVisible] = useState(false)
 	const insets = useSafeAreaInsets()
 	const styles = useThemedStyles(makeStyles)
+	const { preferences } = usePreferences()
 	const { recipes, loading, error } = useRecipes(selectedTags)
+
+	// `recipes` is already narrowed by the tag filter, so its length is
+	// exactly what the list is showing. Suppressed while a fetch is in flight
+	// — the state still holds the previous result set, and flashing a stale
+	// count is worse than briefly showing none.
+	const headerTitle =
+		preferences.showRecipeCount && !loading && !error
+			? `Recipes (${recipes.length})`
+			: "Recipes"
 
 	// Compute the union of tags across all currently visible recipes so the
 	// filter row shows tags that actually match something. We derive it from
@@ -46,7 +57,7 @@ export function RecipeListScreen({ navigation }: ScreenProps<"RecipeList">) {
 
 	useLayoutEffect(() => {
 		navigation.setOptions({
-			title: "Recipes",
+			title: headerTitle,
 			headerRight: () => (
 				<View style={styles.headerButtons}>
 					<Pressable
@@ -73,7 +84,7 @@ export function RecipeListScreen({ navigation }: ScreenProps<"RecipeList">) {
 				</View>
 			)
 		})
-	}, [navigation, styles])
+	}, [navigation, styles, headerTitle])
 
 	function toggleTag(tag: string) {
 		setSelectedTags((current) =>

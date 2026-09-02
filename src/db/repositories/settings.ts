@@ -14,6 +14,19 @@ export async function getSetting(key: string): Promise<string | null> {
 	return row?.value ?? null
 }
 
+/**
+ * Every stored preference, keyed by name. The table holds one short row per
+ * setting, so PreferencesProvider reads the lot in a single query at startup
+ * rather than paying a round trip per preference as more of them land.
+ */
+export async function getAllSettings(): Promise<Record<string, string>> {
+	const db = await getDb()
+	const rows = await db.getAllAsync<{ key: string; value: string }>(
+		`SELECT key, value FROM settings;`
+	)
+	return Object.fromEntries(rows.map((r) => [r.key, r.value]))
+}
+
 /** Writes (or overwrites) one preference. */
 export async function setSetting(key: string, value: string): Promise<void> {
 	const db = await getDb()

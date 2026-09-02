@@ -3,6 +3,7 @@ import { GestureHandlerRootView } from "react-native-gesture-handler"
 import { KeyboardProvider } from "react-native-keyboard-controller"
 import { SafeAreaProvider } from "react-native-safe-area-context"
 import { DatabaseProvider } from "./src/hooks/DataBaseProvider"
+import { PreferencesProvider } from "./src/hooks/PreferencesProvider"
 import { RootNavigator } from "./src/navigation/RootNavigator"
 import { ThemedStatusBar, ThemeProvider } from "./src/theme/ThemeProvider"
 
@@ -19,9 +20,11 @@ import { ThemedStatusBar, ThemeProvider } from "./src/theme/ThemeProvider"
  *    KeyboardAwareScrollView (see components/KeyboardAwareScrollView.tsx).
  *  - SafeAreaProvider next so navigator headers and screens both get
  *    a valid inset frame.
+ *  - PreferencesProvider next, holding children back for one DB read while it
+ *    loads the saved settings. It's above ThemeProvider because that's where
+ *    the light/dark choice comes from.
  *  - ThemeProvider next, above DatabaseProvider because DatabaseProvider's
- *    own loading/error screens are themed. It also holds children back for
- *    one DB read while it loads the saved light/dark preference.
+ *    own loading/error screens are themed.
  *  - DatabaseProvider next so the nav tree only renders after the schema
  *    has run (see DataBaseProvider.tsx).
  *  - StatusBar is a sibling of the nav tree but still inside ThemeProvider —
@@ -33,12 +36,14 @@ export default function App() {
 		<GestureHandlerRootView style={styles.root}>
 			<KeyboardProvider>
 				<SafeAreaProvider>
-					<ThemeProvider>
-						<DatabaseProvider>
-							<RootNavigator />
-						</DatabaseProvider>
-						<ThemedStatusBar />
-					</ThemeProvider>
+					<PreferencesProvider>
+						<ThemeProvider>
+							<DatabaseProvider>
+								<RootNavigator />
+							</DatabaseProvider>
+							<ThemedStatusBar />
+						</ThemeProvider>
+					</PreferencesProvider>
 				</SafeAreaProvider>
 			</KeyboardProvider>
 		</GestureHandlerRootView>
