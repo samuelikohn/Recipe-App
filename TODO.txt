@@ -1,7 +1,6 @@
 settings page
 - text size slider
 Tags
-- selecting tags makes them dissapear sometimes
 - make tags searchable
 - select tags by pressing on recipe cards
 Can reorder/download images from RecipeForm

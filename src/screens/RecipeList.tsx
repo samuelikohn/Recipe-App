@@ -1,4 +1,4 @@
-import { useLayoutEffect, useMemo, useState } from "react"
+import { useCallback, useLayoutEffect, useMemo, useRef, useState } from "react"
 import {
 	ActivityIndicator,
 	FlatList,
@@ -86,6 +86,27 @@ export function RecipeListScreen({ navigation }: ScreenProps<"RecipeList">) {
 		})
 	}, [navigation, styles, headerTitle])
 
+	// Selecting a tag narrows `recipes`, which narrows `allTags`, so the chip
+	// row's content gets shorter. The ScrollView holds on to its old offset,
+	// which can now point past the end of the content — leaving every chip
+	// rendered off the left edge until something else forces a re-layout.
+	// Clamp the offset ourselves whenever the content or viewport resizes.
+	const tagScrollRef = useRef<ScrollView>(null)
+	const tagScrollX = useRef(0)
+	const tagViewportWidth = useRef(0)
+	const tagContentWidth = useRef(0)
+
+	const clampTagScroll = useCallback(() => {
+		const maxOffset = Math.max(
+			0,
+			tagContentWidth.current - tagViewportWidth.current
+		)
+		if (tagScrollX.current > maxOffset) {
+			tagScrollX.current = maxOffset
+			tagScrollRef.current?.scrollTo({ x: maxOffset, animated: false })
+		}
+	}, [])
+
 	function toggleTag(tag: string) {
 		setSelectedTags((current) =>
 			current.includes(tag)
@@ -107,9 +128,22 @@ export function RecipeListScreen({ navigation }: ScreenProps<"RecipeList">) {
 		<View style={styles.container}>
 			{allTags.length > 0 ? (
 				<ScrollView
+					ref={tagScrollRef}
 					horizontal
 					showsHorizontalScrollIndicator={false}
 					contentContainerStyle={styles.tagRow}
+					scrollEventThrottle={16}
+					onScroll={(e) => {
+						tagScrollX.current = e.nativeEvent.contentOffset.x
+					}}
+					onLayout={(e) => {
+						tagViewportWidth.current = e.nativeEvent.layout.width
+						clampTagScroll()
+					}}
+					onContentSizeChange={(width) => {
+						tagContentWidth.current = width
+						clampTagScroll()
+					}}
 				>
 					{allTags.map((tag) => (
 						<TagChip
