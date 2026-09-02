@@ -22,7 +22,8 @@ import { useRecipe } from "../hooks/useRecipe"
 import { useRowKeys } from "../hooks/useRowKeys"
 import { Component } from "../models/types"
 import { RecipeDraft, ScreenProps } from "../navigation/types"
-import { colors } from "../theme/colors"
+import { useTheme, useThemedStyles } from "../theme/ThemeProvider"
+import { ThemeColors } from "../theme/colors"
 import { fontSize, fontWeight } from "../theme/typography"
 import { joinDirectionSteps, splitDirectionSteps } from "../utils/directions"
 import { validateRecipe } from "../utils/validation"
@@ -57,6 +58,8 @@ export function RecipeFormScreen({
 	const editingName = route.params?.name
 	const { recipe, loading } = useRecipe(editingName)
 	const insets = useSafeAreaInsets()
+	const { colors } = useTheme()
+	const styles = useThemedStyles(makeStyles)
 	const [draft, setDraft] = useState<RecipeDraft>(EMPTY_DRAFT)
 	const [initialDraft, setInitialDraft] = useState<RecipeDraft>(EMPTY_DRAFT)
 	const [initialized, setInitialized] = useState(false)
@@ -349,79 +352,80 @@ export function RecipeFormScreen({
 	)
 }
 
-const styles = StyleSheet.create({
-	container: {
-		flex: 1,
-		backgroundColor: colors.surface
-	},
-	content: {
-		padding: 16
-	},
-	headerButton: {
-		paddingHorizontal: 8
-	},
-	headerButtonText: {
-		fontSize: fontSize.input,
-		color: colors.primary,
-		fontWeight: fontWeight.semibold
-	},
-	timingRow: {
-		flexDirection: "row",
-		gap: 12
-	},
-	timingField: {
-		flex: 1
-	},
-	input: {
-		borderWidth: 1,
-		borderColor: colors.borderStrong,
-		borderRadius: 8,
-		paddingHorizontal: 12,
-		paddingVertical: 10,
-		fontSize: fontSize.input,
-		color: colors.textBody,
-		backgroundColor: colors.surface
-	},
-	componentRow: {
-		flexDirection: "row",
-		alignItems: "center",
-		borderWidth: 1,
-		borderColor: colors.border,
-		borderRadius: 8,
-		padding: 12,
-		marginBottom: 8
-	},
-	componentBody: {
-		flex: 1
-	},
-	componentName: {
-		fontSize: fontSize.input,
-		fontWeight: fontWeight.semibold,
-		color: colors.textBody
-	},
-	componentMeta: {
-		fontSize: fontSize.meta,
-		color: colors.textMuted,
-		marginTop: 2
-	},
-	componentRemove: {
-		paddingHorizontal: 8
-	},
-	componentRemoveText: {
-		color: colors.danger,
-		fontSize: fontSize.componentTitle
-	},
-	addButton: {
-		padding: 12,
-		marginTop: 8,
-		borderRadius: 8,
-		borderWidth: 1,
-		borderColor: colors.primary,
-		borderStyle: "dashed",
-		alignItems: "center"
-	},
-	addButtonText: {
-		color: colors.primary,
-		fontWeight: fontWeight.semibold
-	}
-})
+const makeStyles = (colors: ThemeColors) =>
+	StyleSheet.create({
+		container: {
+			flex: 1,
+			backgroundColor: colors.surface
+		},
+		content: {
+			padding: 16
+		},
+		headerButton: {
+			paddingHorizontal: 8
+		},
+		headerButtonText: {
+			fontSize: fontSize.input,
+			color: colors.primary,
+			fontWeight: fontWeight.semibold
+		},
+		timingRow: {
+			flexDirection: "row",
+			gap: 12
+		},
+		timingField: {
+			flex: 1
+		},
+		input: {
+			borderWidth: 1,
+			borderColor: colors.borderStrong,
+			borderRadius: 8,
+			paddingHorizontal: 12,
+			paddingVertical: 10,
+			fontSize: fontSize.input,
+			color: colors.textBody,
+			backgroundColor: colors.surface
+		},
+		componentRow: {
+			flexDirection: "row",
+			alignItems: "center",
+			borderWidth: 1,
+			borderColor: colors.border,
+			borderRadius: 8,
+			padding: 12,
+			marginBottom: 8
+		},
+		componentBody: {
+			flex: 1
+		},
+		componentName: {
+			fontSize: fontSize.input,
+			fontWeight: fontWeight.semibold,
+			color: colors.textBody
+		},
+		componentMeta: {
+			fontSize: fontSize.meta,
+			color: colors.textMuted,
+			marginTop: 2
+		},
+		componentRemove: {
+			paddingHorizontal: 8
+		},
+		componentRemoveText: {
+			color: colors.danger,
+			fontSize: fontSize.componentTitle
+		},
+		addButton: {
+			padding: 12,
+			marginTop: 8,
+			borderRadius: 8,
+			borderWidth: 1,
+			borderColor: colors.primary,
+			borderStyle: "dashed",
+			alignItems: "center"
+		},
+		addButtonText: {
+			color: colors.primary,
+			fontWeight: fontWeight.semibold
+		}
+	})

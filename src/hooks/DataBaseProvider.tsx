@@ -7,7 +7,8 @@ import React, {
 } from "react"
 import { ActivityIndicator, StyleSheet, Text, View } from "react-native"
 import { getDb } from "../db/client"
-import { colors } from "../theme/colors"
+import { useThemedStyles } from "../theme/ThemeProvider"
+import { ThemeColors } from "../theme/colors"
 import { fontSize, fontWeight } from "../theme/typography"
 
 type DatabaseContextValue = {
@@ -37,6 +38,7 @@ const DatabaseContext = createContext<DatabaseContextValue>({
 export function DatabaseProvider({ children }: { children: ReactNode }) {
 	const [isReady, setIsReady] = useState(false)
 	const [error, setError] = useState<Error | null>(null)
+	const styles = useThemedStyles(makeStyles)
 
 	useEffect(() => {
 		let cancelled = false
@@ -82,24 +84,25 @@ export function useDatabaseReady(): DatabaseContextValue {
 	return useContext(DatabaseContext)
 }
 
-const styles = StyleSheet.create({
-	centered: {
-		flex: 1,
-		alignItems: "center",
-		justifyContent: "center",
-		padding: 24,
-		backgroundColor: colors.background
-	},
-	errorTitle: {
-		fontSize: fontSize.componentTitle,
-		fontWeight: fontWeight.semibold,
-		color: colors.textPrimary,
-		textAlign: "center"
-	},
-	errorBody: {
-		marginTop: 8,
-		fontSize: fontSize.body,
-		color: colors.textMuted,
-		textAlign: "center"
-	}
-})
+const makeStyles = (colors: ThemeColors) =>
+	StyleSheet.create({
+		centered: {
+			flex: 1,
+			alignItems: "center",
+			justifyContent: "center",
+			padding: 24,
+			backgroundColor: colors.background
+		},
+		errorTitle: {
+			fontSize: fontSize.componentTitle,
+			fontWeight: fontWeight.semibold,
+			color: colors.textPrimary,
+			textAlign: "center"
+		},
+		errorBody: {
+			marginTop: 8,
+			fontSize: fontSize.body,
+			color: colors.textMuted,
+			textAlign: "center"
+		}
+	})

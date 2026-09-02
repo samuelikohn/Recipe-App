@@ -1,6 +1,7 @@
 import { useState } from "react"
 import { StyleSheet, TextInput, View } from "react-native"
-import { colors } from "../theme/colors"
+import { useTheme, useThemedStyles } from "../theme/ThemeProvider"
+import { ThemeColors } from "../theme/colors"
 import { fontSize } from "../theme/typography"
 import { TagChip } from "./TagChip"
 
@@ -17,6 +18,8 @@ type Props = {
  */
 export function TagInput({ values, onChange, placeholder = "Add tag" }: Props) {
 	const [draft, setDraft] = useState("")
+	const { colors } = useTheme()
+	const styles = useThemedStyles(makeStyles)
 
 	function commit() {
 		const trimmed = draft.trim()
@@ -59,25 +62,26 @@ export function TagInput({ values, onChange, placeholder = "Add tag" }: Props) {
 	)
 }
 
-const styles = StyleSheet.create({
-	container: {
-		borderWidth: 1,
-		borderColor: colors.borderStrong,
-		borderRadius: 8,
-		padding: 8,
-		backgroundColor: colors.surface
-	},
-	chipRow: {
-		flexDirection: "row",
-		flexWrap: "wrap",
-		alignItems: "center"
-	},
-	input: {
-		flexGrow: 1,
-		minWidth: 100,
-		fontSize: fontSize.body,
-		paddingVertical: 4,
-		paddingHorizontal: 4,
-		color: colors.textBody
-	}
-})
+const makeStyles = (colors: ThemeColors) =>
+	StyleSheet.create({
+		container: {
+			borderWidth: 1,
+			borderColor: colors.borderStrong,
+			borderRadius: 8,
+			padding: 8,
+			backgroundColor: colors.surface
+		},
+		chipRow: {
+			flexDirection: "row",
+			flexWrap: "wrap",
+			alignItems: "center"
+		},
+		input: {
+			flexGrow: 1,
+			minWidth: 100,
+			fontSize: fontSize.body,
+			paddingVertical: 4,
+			paddingHorizontal: 4,
+			color: colors.textBody
+		}
+	})

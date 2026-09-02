@@ -1,5 +1,6 @@
 import { Pressable, StyleSheet, Text, TextInput, View } from "react-native"
-import { colors } from "../theme/colors"
+import { useTheme, useThemedStyles } from "../theme/ThemeProvider"
+import { ThemeColors } from "../theme/colors"
 import { fontSize } from "../theme/typography"
 
 type Props = {
@@ -15,6 +16,9 @@ export function SearchBar({
 	placeholder = "Search recipes",
 	autoFocus
 }: Props) {
+	const { colors } = useTheme()
+	const styles = useThemedStyles(makeStyles)
+
 	return (
 		<View style={styles.container}>
 			<TextInput
@@ -40,31 +44,32 @@ export function SearchBar({
 	)
 }
 
-const styles = StyleSheet.create({
-	container: {
-		flexDirection: "row",
-		alignItems: "center",
-		backgroundColor: colors.surfaceAlt,
-		borderRadius: 10,
-		paddingHorizontal: 12,
-		paddingVertical: 8,
-		margin: 12
-	},
-	input: {
-		flex: 1,
-		fontSize: fontSize.input,
-		color: colors.textBody,
-		padding: 0
-	},
-	clear: {
-		marginLeft: 8,
-		width: 20,
-		height: 20,
-		alignItems: "center",
-		justifyContent: "center"
-	},
-	clearText: {
-		color: colors.textMuted,
-		fontSize: fontSize.body
-	}
-})
+const makeStyles = (colors: ThemeColors) =>
+	StyleSheet.create({
+		container: {
+			flexDirection: "row",
+			alignItems: "center",
+			backgroundColor: colors.surfaceAlt,
+			borderRadius: 10,
+			paddingHorizontal: 12,
+			paddingVertical: 8,
+			margin: 12
+		},
+		input: {
+			flex: 1,
+			fontSize: fontSize.input,
+			color: colors.textBody,
+			padding: 0
+		},
+		clear: {
+			marginLeft: 8,
+			width: 20,
+			height: 20,
+			alignItems: "center",
+			justifyContent: "center"
+		},
+		clearText: {
+			color: colors.textMuted,
+			fontSize: fontSize.body
+		}
+	})

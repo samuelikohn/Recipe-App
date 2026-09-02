@@ -1,5 +1,6 @@
 import { Pressable, StyleSheet, Text, View } from "react-native"
-import { colors } from "../theme/colors"
+import { useThemedStyles } from "../theme/ThemeProvider"
+import { ThemeColors } from "../theme/colors"
 import { fontSize } from "../theme/typography"
 
 type Props = {
@@ -16,6 +17,7 @@ type Props = {
  * chip shows a trailing ✕ that fires it — used by TagInput.
  */
 export function TagChip({ label, selected, onPress, onRemove }: Props) {
+	const styles = useThemedStyles(makeStyles)
 	const body = (
 		<View style={[styles.chip, selected && styles.chipSelected]}>
 			<Text style={[styles.label, selected && styles.labelSelected]}>
@@ -39,37 +41,38 @@ export function TagChip({ label, selected, onPress, onRemove }: Props) {
 	return body
 }
 
-const styles = StyleSheet.create({
-	pressable: {
-		marginRight: 6,
-		marginBottom: 6
-	},
-	chip: {
-		flexDirection: "row",
-		alignItems: "center",
-		paddingHorizontal: 10,
-		paddingVertical: 4,
-		backgroundColor: colors.border,
-		borderRadius: 12,
-		marginRight: 6,
-		marginBottom: 6
-	},
-	chipSelected: {
-		backgroundColor: colors.primary
-	},
-	label: {
-		fontSize: fontSize.meta,
-		color: colors.textDefault,
-		height: 16
-	},
-	labelSelected: {
-		color: colors.primaryOn
-	},
-	remove: {
-		marginLeft: 6
-	},
-	removeText: {
-		fontSize: fontSize.meta,
-		color: colors.textMuted
-	}
-})
+const makeStyles = (colors: ThemeColors) =>
+	StyleSheet.create({
+		pressable: {
+			marginRight: 6,
+			marginBottom: 6
+		},
+		chip: {
+			flexDirection: "row",
+			alignItems: "center",
+			paddingHorizontal: 10,
+			paddingVertical: 4,
+			backgroundColor: colors.border,
+			borderRadius: 12,
+			marginRight: 6,
+			marginBottom: 6
+		},
+		chipSelected: {
+			backgroundColor: colors.primary
+		},
+		label: {
+			fontSize: fontSize.meta,
+			color: colors.textDefault,
+			height: 16
+		},
+		labelSelected: {
+			color: colors.primaryOn
+		},
+		remove: {
+			marginLeft: 6
+		},
+		removeText: {
+			fontSize: fontSize.meta,
+			color: colors.textMuted
+		}
+	})

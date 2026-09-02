@@ -1,7 +1,6 @@
 settings page
-- text size slider
-- dark mode toggle
 - show number of recipes on screen toggle
+- text size slider
 Tags
 - selecting tags makes them dissapear sometimes
 - make tags searchable

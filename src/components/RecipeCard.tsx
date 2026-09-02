@@ -1,6 +1,7 @@
 import { Image, Pressable, StyleSheet, Text, View } from "react-native"
 import { RecipeSummary } from "../models/types"
-import { colors } from "../theme/colors"
+import { useThemedStyles } from "../theme/ThemeProvider"
+import { ThemeColors } from "../theme/colors"
 import { fontSize, fontWeight } from "../theme/typography"
 import { formatDuration } from "../utils/format"
 import { TagChip } from "./TagChip"
@@ -17,6 +18,7 @@ type Props = {
  * roughly the same height.
  */
 export function RecipeCard({ recipe, onPress }: Props) {
+	const styles = useThemedStyles(makeStyles)
 	const visibleTags = recipe.tags.slice(0, 3)
 	const extra = recipe.tags.length - visibleTags.length
 	const totalTime = recipe.prep_time + recipe.cook_time
@@ -65,62 +67,63 @@ export function RecipeCard({ recipe, onPress }: Props) {
 	)
 }
 
-const styles = StyleSheet.create({
-	card: {
-		flexDirection: "row",
-		backgroundColor: colors.surface,
-		borderRadius: 12,
-		marginHorizontal: 12,
-		marginVertical: 6,
-		overflow: "hidden",
-		borderWidth: 1,
-		borderColor: colors.border
-	},
-	pressed: {
-		opacity: 0.7
-	},
-	image: {
-		width: 96,
-		objectFit: "cover"
-	},
-	placeholder: {
-		backgroundColor: colors.surfaceMuted,
-		alignItems: "center",
-		justifyContent: "center"
-	},
-	placeholderText: {
-		fontSize: fontSize.fine,
-		color: colors.textPlaceholder
-	},
-	body: {
-		flex: 1,
-		padding: 12,
-		justifyContent: "center"
-	},
-	name: {
-		fontSize: fontSize.input,
-		fontWeight: fontWeight.bold,
-		color: colors.textBody
-	},
-	servings: {
-		marginTop: 2,
-		fontSize: fontSize.meta,
-		color: colors.textMuted
-	},
-	timing: {
-		marginTop: 2,
-		fontSize: fontSize.meta,
-		color: colors.textMuted
-	},
-	tagRow: {
-		flexDirection: "row",
-		flexWrap: "wrap",
-		alignItems: "center",
-		marginTop: 6
-	},
-	moreTags: {
-		fontSize: fontSize.meta,
-		color: colors.textMuted,
-		marginLeft: 2
-	}
-})
+const makeStyles = (colors: ThemeColors) =>
+	StyleSheet.create({
+		card: {
+			flexDirection: "row",
+			backgroundColor: colors.surface,
+			borderRadius: 12,
+			marginHorizontal: 12,
+			marginVertical: 6,
+			overflow: "hidden",
+			borderWidth: 1,
+			borderColor: colors.border
+		},
+		pressed: {
+			opacity: 0.7
+		},
+		image: {
+			width: 96,
+			objectFit: "cover"
+		},
+		placeholder: {
+			backgroundColor: colors.surfaceMuted,
+			alignItems: "center",
+			justifyContent: "center"
+		},
+		placeholderText: {
+			fontSize: fontSize.fine,
+			color: colors.textPlaceholder
+		},
+		body: {
+			flex: 1,
+			padding: 12,
+			justifyContent: "center"
+		},
+		name: {
+			fontSize: fontSize.input,
+			fontWeight: fontWeight.bold,
+			color: colors.textBody
+		},
+		servings: {
+			marginTop: 2,
+			fontSize: fontSize.meta,
+			color: colors.textMuted
+		},
+		timing: {
+			marginTop: 2,
+			fontSize: fontSize.meta,
+			color: colors.textMuted
+		},
+		tagRow: {
+			flexDirection: "row",
+			flexWrap: "wrap",
+			alignItems: "center",
+			marginTop: 6
+		},
+		moreTags: {
+			fontSize: fontSize.meta,
+			color: colors.textMuted,
+			marginLeft: 2
+		}
+	})

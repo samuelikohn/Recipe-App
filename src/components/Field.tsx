@@ -1,5 +1,6 @@
 import { StyleSheet, Text, View } from "react-native"
-import { colors } from "../theme/colors"
+import { useThemedStyles } from "../theme/ThemeProvider"
+import { ThemeColors } from "../theme/colors"
 import { typography } from "../theme/typography"
 
 export default function Field({
@@ -11,6 +12,8 @@ export default function Field({
 	children: React.ReactNode
 	style?: object
 }) {
+	const styles = useThemedStyles(makeStyles)
+
 	return (
 		<View style={[styles.field, style]}>
 			<Text style={styles.fieldLabel}>{label}</Text>
@@ -19,13 +22,14 @@ export default function Field({
 	)
 }
 
-const styles = StyleSheet.create({
-	field: {
-		marginBottom: 20
-	},
-	fieldLabel: {
-		...typography.sectionHeader,
-		color: colors.textMuted,
-		marginBottom: 6
-	}
-})
+const makeStyles = (colors: ThemeColors) =>
+	StyleSheet.create({
+		field: {
+			marginBottom: 20
+		},
+		fieldLabel: {
+			...typography.sectionHeader,
+			color: colors.textMuted,
+			marginBottom: 6
+		}
+	})

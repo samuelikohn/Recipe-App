@@ -1,11 +1,14 @@
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native"
-import { colors } from "../theme/colors"
+import { useThemedStyles } from "../theme/ThemeProvider"
+import { ThemeColors } from "../theme/colors"
 import { fontSize, fontWeight } from "../theme/typography"
 
 /**
  * Grip that starts a hold-and-drag reorder.
  */
 export function DragHandle({ drag }: { drag: () => void }) {
+	const styles = useThemedStyles(makeStyles)
+
 	return (
 		<TouchableOpacity
 			style={styles.handle}
@@ -22,17 +25,18 @@ export function DragHandle({ drag }: { drag: () => void }) {
 	)
 }
 
-const styles = StyleSheet.create({
-	handle: {
-		width: 32,
-		alignSelf: "stretch",
-		alignItems: "center",
-		justifyContent: "center",
-		marginRight: 6
-	},
-	handleText: {
-		fontSize: fontSize.body,
-		fontWeight: fontWeight.semibold,
-		color: colors.textMuted
-	}
-})
+const makeStyles = (colors: ThemeColors) =>
+	StyleSheet.create({
+		handle: {
+			width: 32,
+			alignSelf: "stretch",
+			alignItems: "center",
+			justifyContent: "center",
+			marginRight: 6
+		},
+		handleText: {
+			fontSize: fontSize.body,
+			fontWeight: fontWeight.semibold,
+			color: colors.textMuted
+		}
+	})

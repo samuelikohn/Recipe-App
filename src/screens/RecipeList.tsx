@@ -15,7 +15,8 @@ import { RecipeCard } from "../components/RecipeCard"
 import { TagChip } from "../components/TagChip"
 import { useRecipes } from "../hooks/useRecipes"
 import { ScreenProps } from "../navigation/types"
-import { colors } from "../theme/colors"
+import { useThemedStyles } from "../theme/ThemeProvider"
+import { ThemeColors } from "../theme/colors"
 
 /**
  * Root of the app: full recipe list with a tag-filter chip row above it.
@@ -26,6 +27,7 @@ export function RecipeListScreen({ navigation }: ScreenProps<"RecipeList">) {
 	const [selectedTags, setSelectedTags] = useState<string[]>([])
 	const [menuVisible, setMenuVisible] = useState(false)
 	const insets = useSafeAreaInsets()
+	const styles = useThemedStyles(makeStyles)
 	const { recipes, loading, error } = useRecipes(selectedTags)
 
 	// Compute the union of tags across all currently visible recipes so the
@@ -71,7 +73,7 @@ export function RecipeListScreen({ navigation }: ScreenProps<"RecipeList">) {
 				</View>
 			)
 		})
-	}, [navigation])
+	}, [navigation, styles])
 
 	function toggleTag(tag: string) {
 		setSelectedTags((current) =>
@@ -171,51 +173,52 @@ export function RecipeListScreen({ navigation }: ScreenProps<"RecipeList">) {
 	)
 }
 
-const styles = StyleSheet.create({
-	container: {
-		flex: 1,
-		backgroundColor: colors.background
-	},
-	headerButtons: {
-		flexDirection: "row",
-		alignItems: "center"
-	},
-	headerButton: {
-		paddingHorizontal: 8
-	},
-	headerButtonText: {
-		fontSize: 24,
-		color: colors.primary
-	},
-	tagRow: {
-		paddingHorizontal: 8,
-		paddingVertical: 8
-	},
-	loading: {
-		marginTop: 40
-	},
-	menuOverlay: {
-		flex: 1
-	},
-	menu: {
-		position: "absolute",
-		right: 12,
-		backgroundColor: colors.background,
-		borderRadius: 8,
-		paddingVertical: 4,
-		minWidth: 140,
-		shadowColor: "#000",
-		shadowOffset: { width: 0, height: 2 },
-		shadowOpacity: 0.15,
-		shadowRadius: 6,
-		elevation: 4
-	},
-	menuItem: {
-		paddingVertical: 10,
-		paddingHorizontal: 16
-	},
-	menuItemText: {
-		fontSize: 16,
-		color: colors.primary
-	}
-})
+const makeStyles = (colors: ThemeColors) =>
+	StyleSheet.create({
+		container: {
+			flex: 1,
+			backgroundColor: colors.background
+		},
+		headerButtons: {
+			flexDirection: "row",
+			alignItems: "center"
+		},
+		headerButton: {
+			paddingHorizontal: 8
+		},
+		headerButtonText: {
+			fontSize: 24,
+			color: colors.primary
+		},
+		tagRow: {
+			paddingHorizontal: 8,
+			paddingVertical: 8
+		},
+		loading: {
+			marginTop: 40
+		},
+		menuOverlay: {
+			flex: 1
+		},
+		menu: {
+			position: "absolute",
+			right: 12,
+			backgroundColor: colors.background,
+			borderRadius: 8,
+			paddingVertical: 4,
+			minWidth: 140,
+			shadowColor: "#000",
+			shadowOffset: { width: 0, height: 2 },
+			shadowOpacity: 0.15,
+			shadowRadius: 6,
+			elevation: 4
+		},
+		menuItem: {
+			paddingVertical: 10,
+			paddingHorizontal: 16
+		},
+		menuItemText: {
+			fontSize: 16,
+			color: colors.primary
+		}
+	})

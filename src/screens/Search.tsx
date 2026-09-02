@@ -6,11 +6,13 @@ import { RecipeCard } from "../components/RecipeCard"
 import { SearchBar } from "../components/SearchBar"
 import { useSearch } from "../hooks/useSearch"
 import { ScreenProps } from "../navigation/types"
-import { colors } from "../theme/colors"
+import { useThemedStyles } from "../theme/ThemeProvider"
+import { ThemeColors } from "../theme/colors"
 
 export function SearchScreen({ navigation }: ScreenProps<"Search">) {
 	const { query, setQuery, results, loading, error } = useSearch()
 	const insets = useSafeAreaInsets()
+	const styles = useThemedStyles(makeStyles)
 
 	useLayoutEffect(() => {
 		navigation.setOptions({ title: "Search" })
@@ -59,12 +61,13 @@ export function SearchScreen({ navigation }: ScreenProps<"Search">) {
 	)
 }
 
-const styles = StyleSheet.create({
-	container: {
-		flex: 1,
-		backgroundColor: colors.background
-	},
-	loading: {
-		marginTop: 40
-	}
-})
+const makeStyles = (colors: ThemeColors) =>
+	StyleSheet.create({
+		container: {
+			flex: 1,
+			backgroundColor: colors.background
+		},
+		loading: {
+			marginTop: 40
+		}
+	})

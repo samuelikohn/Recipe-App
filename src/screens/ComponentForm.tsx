@@ -20,7 +20,8 @@ import { KeyboardAwareScrollView } from "../components/KeyboardAwareScrollView"
 import { useRowKeys } from "../hooks/useRowKeys"
 import { Component, Ingredient } from "../models/types"
 import { ScreenProps } from "../navigation/types"
-import { colors } from "../theme/colors"
+import { useTheme, useThemedStyles } from "../theme/ThemeProvider"
+import { ThemeColors } from "../theme/colors"
 import { fontSize, fontWeight } from "../theme/typography"
 import { joinDirectionSteps, splitDirectionSteps } from "../utils/directions"
 import { validateComponent } from "../utils/validation"
@@ -60,6 +61,8 @@ export function ComponentFormScreen({
 }: ScreenProps<"ComponentForm">) {
 	const { initial, onSubmit } = route.params
 	const insets = useSafeAreaInsets()
+	const { colors } = useTheme()
+	const styles = useThemedStyles(makeStyles)
 	const [draft, setDraft] = useState<Component>(initial ?? EMPTY_COMPONENT)
 	const [initialDraft] = useState<Component>(initial ?? EMPTY_COMPONENT)
 	const [equipmentDraft, setEquipmentDraft] = useState("")
@@ -339,73 +342,74 @@ export function ComponentFormScreen({
 	)
 }
 
-const styles = StyleSheet.create({
-	container: {
-		flex: 1,
-		backgroundColor: colors.surface
-	},
-	content: {
-		padding: 16
-	},
-	headerButton: {
-		paddingHorizontal: 8
-	},
-	headerButtonText: {
-		fontSize: fontSize.input,
-		color: colors.primary,
-		fontWeight: fontWeight.semibold
-	},
-	input: {
-		borderWidth: 1,
-		borderColor: colors.borderStrong,
-		borderRadius: 8,
-		paddingHorizontal: 12,
-		paddingVertical: 10,
-		fontSize: fontSize.input,
-		color: colors.textBody,
-		backgroundColor: colors.surface
-	},
-	timingRow: {
-		flexDirection: "row",
-		gap: 12
-	},
-	timingField: {
-		flex: 1
-	},
-	equipmentRow: {
-		flexDirection: "row",
-		flexWrap: "wrap",
-		marginBottom: 8
-	},
-	equipmentAddRow: {
-		flexDirection: "row",
-		alignItems: "center"
-	},
-	equipmentInput: {
-		flex: 1,
-		marginRight: 8
-	},
-	equipmentAddBtn: {
-		paddingHorizontal: 14,
-		paddingVertical: 10,
-		backgroundColor: colors.primary,
-		borderRadius: 8
-	},
-	equipmentAddBtnText: {
-		color: colors.primaryOn,
-		fontWeight: fontWeight.semibold
-	},
-	addButton: {
-		padding: 12,
-		borderRadius: 8,
-		borderWidth: 1,
-		borderColor: colors.primary,
-		borderStyle: "dashed",
-		alignItems: "center",
-		marginTop: 8
-	},
-	addButtonText: {
-		color: colors.primary,
-		fontWeight: fontWeight.semibold
-	}
-})
+const makeStyles = (colors: ThemeColors) =>
+	StyleSheet.create({
+		container: {
+			flex: 1,
+			backgroundColor: colors.surface
+		},
+		content: {
+			padding: 16
+		},
+		headerButton: {
+			paddingHorizontal: 8
+		},
+		headerButtonText: {
+			fontSize: fontSize.input,
+			color: colors.primary,
+			fontWeight: fontWeight.semibold
+		},
+		input: {
+			borderWidth: 1,
+			borderColor: colors.borderStrong,
+			borderRadius: 8,
+			paddingHorizontal: 12,
+			paddingVertical: 10,
+			fontSize: fontSize.input,
+			color: colors.textBody,
+			backgroundColor: colors.surface
+		},
+		timingRow: {
+			flexDirection: "row",
+			gap: 12
+		},
+		timingField: {
+			flex: 1
+		},
+		equipmentRow: {
+			flexDirection: "row",
+			flexWrap: "wrap",
+			marginBottom: 8
+		},
+		equipmentAddRow: {
+			flexDirection: "row",
+			alignItems: "center"
+		},
+		equipmentInput: {
+			flex: 1,
+			marginRight: 8
+		},
+		equipmentAddBtn: {
+			paddingHorizontal: 14,
+			paddingVertical: 10,
+			backgroundColor: colors.primary,
+			borderRadius: 8
+		},
+		equipmentAddBtnText: {
+			color: colors.primaryOn,
+			fontWeight: fontWeight.semibold
+		},
+		addButton: {
+			padding: 12,
+			borderRadius: 8,
+			borderWidth: 1,
+			borderColor: colors.primary,
+			borderStyle: "dashed",
+			alignItems: "center",
+			marginTop: 8
+		},
+		addButtonText: {
+			color: colors.primary,
+			fontWeight: fontWeight.semibold
+		}
+	})

@@ -16,7 +16,8 @@ import { TagChip } from "../components/TagChip"
 import { deleteRecipe } from "../db/repositories/recipes"
 import { useRecipe } from "../hooks/useRecipe"
 import { ScreenProps } from "../navigation/types"
-import { colors } from "../theme/colors"
+import { useThemedStyles } from "../theme/ThemeProvider"
+import { ThemeColors } from "../theme/colors"
 import { fontSize, fontWeight, typography } from "../theme/typography"
 import { deleteImageFile } from "../utils/fileStorage"
 import { formatDuration } from "../utils/format"
@@ -28,6 +29,7 @@ export function RecipeDetailScreen({
 	const { name } = route.params
 	const { recipe, loading, error } = useRecipe(name)
 	const insets = useSafeAreaInsets()
+	const styles = useThemedStyles(makeStyles)
 	const [servings, setServings] = useState<number | null>(null)
 
 	useLayoutEffect(() => {
@@ -48,7 +50,7 @@ export function RecipeDetailScreen({
 					</Pressable>
 				) : null
 		})
-	}, [navigation, recipe])
+	}, [navigation, recipe, styles])
 
 	if (loading) {
 		return <ActivityIndicator style={styles.loading} />
@@ -171,100 +173,101 @@ export function RecipeDetailScreen({
 	)
 }
 
-const styles = StyleSheet.create({
-	container: {
-		flex: 1,
-		backgroundColor: colors.surface
-	},
-	loading: {
-		marginTop: 40
-	},
-	headerButton: {
-		paddingHorizontal: 8
-	},
-	headerButtonText: {
-		fontSize: fontSize.input,
-		color: colors.primary
-	},
-	header: {
-		padding: 16,
-		borderBottomWidth: 1,
-		borderBottomColor: colors.border
-	},
-	title: {
-		fontSize: fontSize.recipeTitle,
-		fontWeight: fontWeight.bold,
-		color: colors.textPrimary
-	},
-	servingsRow: {
-		flexDirection: "row",
-		alignItems: "center",
-		marginTop: 12
-	},
-	servingsLabel: {
-		fontSize: fontSize.body,
-		color: colors.textSecondary,
-		marginRight: 12
-	},
-	servingsButton: {
-		width: 28,
-		height: 28,
-		borderRadius: 14,
-		alignItems: "center",
-		justifyContent: "center",
-		backgroundColor: colors.border,
-		marginHorizontal: 6
-	},
-	servingsButtonText: {
-		fontSize: fontSize.componentTitle,
-		color: colors.textDefault,
-		fontWeight: fontWeight.semibold
-	},
-	servingsValue: {
-		fontSize: fontSize.input,
-		fontWeight: fontWeight.semibold,
-		color: colors.textPrimary,
-		minWidth: 24,
-		textAlign: "center"
-	},
-	resetButton: {
-		marginLeft: 12
-	},
-	resetText: {
-		fontSize: fontSize.meta,
-		color: colors.primary
-	},
-	tagRow: {
-		flexDirection: "row",
-		flexWrap: "wrap",
-		marginTop: 12
-	},
-	timing: {
-		marginTop: 12,
-		fontSize: fontSize.meta,
-		color: colors.textMuted
-	},
-	section: {
-		paddingHorizontal: 16,
-		paddingVertical: 16,
-		borderBottomWidth: 1,
-		borderBottomColor: colors.border
-	},
-	sectionHeader: {
-		...typography.sectionHeader,
-		color: colors.textMuted,
-		marginBottom: 6
-	},
-	deleteButton: {
-		margin: 24,
-		padding: 12,
-		borderRadius: 8,
-		borderWidth: 1,
-		borderColor: colors.danger,
-		alignItems: "center"
-	},
-	deleteText: {
-		color: colors.danger,
-		fontWeight: fontWeight.semibold
-	}
-})
+const makeStyles = (colors: ThemeColors) =>
+	StyleSheet.create({
+		container: {
+			flex: 1,
+			backgroundColor: colors.surface
+		},
+		loading: {
+			marginTop: 40
+		},
+		headerButton: {
+			paddingHorizontal: 8
+		},
+		headerButtonText: {
+			fontSize: fontSize.input,
+			color: colors.primary
+		},
+		header: {
+			padding: 16,
+			borderBottomWidth: 1,
+			borderBottomColor: colors.border
+		},
+		title: {
+			fontSize: fontSize.recipeTitle,
+			fontWeight: fontWeight.bold,
+			color: colors.textPrimary
+		},
+		servingsRow: {
+			flexDirection: "row",
+			alignItems: "center",
+			marginTop: 12
+		},
+		servingsLabel: {
+			fontSize: fontSize.body,
+			color: colors.textSecondary,
+			marginRight: 12
+		},
+		servingsButton: {
+			width: 28,
+			height: 28,
+			borderRadius: 14,
+			alignItems: "center",
+			justifyContent: "center",
+			backgroundColor: colors.border,
+			marginHorizontal: 6
+		},
+		servingsButtonText: {
+			fontSize: fontSize.componentTitle,
+			color: colors.textDefault,
+			fontWeight: fontWeight.semibold
+		},
+		servingsValue: {
+			fontSize: fontSize.input,
+			fontWeight: fontWeight.semibold,
+			color: colors.textPrimary,
+			minWidth: 24,
+			textAlign: "center"
+		},
+		resetButton: {
+			marginLeft: 12
+		},
+		resetText: {
+			fontSize: fontSize.meta,
+			color: colors.primary
+		},
+		tagRow: {
+			flexDirection: "row",
+			flexWrap: "wrap",
+			marginTop: 12
+		},
+		timing: {
+			marginTop: 12,
+			fontSize: fontSize.meta,
+			color: colors.textMuted
+		},
+		section: {
+			paddingHorizontal: 16,
+			paddingVertical: 16,
+			borderBottomWidth: 1,
+			borderBottomColor: colors.border
+		},
+		sectionHeader: {
+			...typography.sectionHeader,
+			color: colors.textMuted,
+			marginBottom: 6
+		},
+		deleteButton: {
+			margin: 24,
+			padding: 12,
+			borderRadius: 8,
+			borderWidth: 1,
+			borderColor: colors.danger,
+			alignItems: "center"
+		},
+		deleteText: {
+			color: colors.danger,
+			fontWeight: fontWeight.semibold
+		}
+	})

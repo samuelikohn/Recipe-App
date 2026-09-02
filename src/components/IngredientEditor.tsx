@@ -1,7 +1,8 @@
 import { ReactNode, useState } from "react"
 import { Pressable, StyleSheet, Text, TextInput, View } from "react-native"
 import { Ingredient } from "../models/types"
-import { colors } from "../theme/colors"
+import { useTheme, useThemedStyles } from "../theme/ThemeProvider"
+import { ThemeColors } from "../theme/colors"
 import { fontSize } from "../theme/typography"
 
 type Props = {
@@ -23,6 +24,8 @@ export function IngredientEditor({
 	const [amountText, setAmountText] = useState(
 		ingredient.amount ? ingredient.amount.toString() : ""
 	)
+	const { colors } = useTheme()
+	const styles = useThemedStyles(makeStyles)
 
 	function updateAmount(text: string) {
 		let cleaned = text.replace(/[^0-9.]/g, "")
@@ -103,53 +106,54 @@ export function IngredientEditor({
 	)
 }
 
-const styles = StyleSheet.create({
-	container: {
-		paddingVertical: 8,
-		borderBottomWidth: 1,
-		borderBottomColor: colors.border
-	},
-	editorRow: {
-		flexDirection: "row",
-		alignItems: "stretch"
-	},
-	fields: {
-		flex: 1
-	},
-	row: {
-		flexDirection: "row",
-		alignItems: "center",
-		marginBottom: 4
-	},
-	input: {
-		borderWidth: 1,
-		borderColor: colors.borderStrong,
-		borderRadius: 6,
-		paddingHorizontal: 8,
-		paddingVertical: 6,
-		fontSize: fontSize.body,
-		color: colors.textBody,
-		marginRight: 6,
-		backgroundColor: colors.surface
-	},
-	name: {
-		flex: 1
-	},
-	amount: {
-		width: 80
-	},
-	unit: {
-		width: 80
-	},
-	prep: {
-		flex: 1,
-		marginRight: 0
-	},
-	removeButton: {
-		paddingHorizontal: 6
-	},
-	removeText: {
-		color: colors.danger,
-		fontSize: fontSize.input
-	}
-})
+const makeStyles = (colors: ThemeColors) =>
+	StyleSheet.create({
+		container: {
+			paddingVertical: 8,
+			borderBottomWidth: 1,
+			borderBottomColor: colors.border
+		},
+		editorRow: {
+			flexDirection: "row",
+			alignItems: "stretch"
+		},
+		fields: {
+			flex: 1
+		},
+		row: {
+			flexDirection: "row",
+			alignItems: "center",
+			marginBottom: 4
+		},
+		input: {
+			borderWidth: 1,
+			borderColor: colors.borderStrong,
+			borderRadius: 6,
+			paddingHorizontal: 8,
+			paddingVertical: 6,
+			fontSize: fontSize.body,
+			color: colors.textBody,
+			marginRight: 6,
+			backgroundColor: colors.surface
+		},
+		name: {
+			flex: 1
+		},
+		amount: {
+			width: 80
+		},
+		unit: {
+			width: 80
+		},
+		prep: {
+			flex: 1,
+			marginRight: 0
+		},
+		removeButton: {
+			paddingHorizontal: 6
+		},
+		removeText: {
+			color: colors.danger,
+			fontSize: fontSize.input
+		}
+	})

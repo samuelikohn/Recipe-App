@@ -9,6 +9,11 @@ import {
 const DB_NAME = "recipes.db"
 
 let dbInstance: SQLite.SQLiteDatabase | null = null
+// Holds the open-and-migrate work while it's in flight. Two callers can race
+// here at startup — DatabaseProvider and ThemeProvider both ask for the DB as
+// they mount — and without this they would each see a null dbInstance and run
+// the pragmas, schema and migrations concurrently on separate connections.
+let dbOpening: Promise<SQLite.SQLiteDatabase> | null = null
 
 /**
  * Opens (or returns the already-open) database connection.
@@ -28,7 +33,19 @@ let dbInstance: SQLite.SQLiteDatabase | null = null
  */
 export async function getDb(): Promise<SQLite.SQLiteDatabase> {
 	if (dbInstance) return dbInstance
+	if (!dbOpening) {
+		// Cleared on rejection so a failed open (e.g. a corrupt file the user
+		// then replaces) can be retried rather than handing every later
+		// caller the same stale error.
+		dbOpening = openDb().catch((err) => {
+			dbOpening = null
+			throw err
+		})
+	}
+	return dbOpening
+}
 
+async function openDb(): Promise<SQLite.SQLiteDatabase> {
 	const db = await SQLite.openDatabaseAsync(DB_NAME)
 	await db.execAsync("PRAGMA foreign_keys = ON;")
 	await db.execAsync("PRAGMA recursive_triggers = ON;")
@@ -187,4 +204,5 @@ async function migrateComponentIngredientsKey(
 /** Test-only escape hatch to force a fresh connection + schema run. */
 export function _resetDbForTests(): void {
 	dbInstance = null
+	dbOpening = null
 }

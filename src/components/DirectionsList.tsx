@@ -1,6 +1,7 @@
 import { Fragment } from "react"
 import { StyleSheet, Text, View } from "react-native"
-import { colors } from "../theme/colors"
+import { useThemedStyles } from "../theme/ThemeProvider"
+import { ThemeColors } from "../theme/colors"
 import { fontWeight, typography } from "../theme/typography"
 import { splitDirectionSteps } from "../utils/directions"
 
@@ -16,6 +17,7 @@ type Props = {
  * callers use that to decide whether to show a "Directions" section header.
  */
 export function DirectionsList({ directions }: Props) {
+	const styles = useThemedStyles(makeStyles)
 	const steps = splitDirectionSteps(directions)
 		.map((step) => step.trim())
 		.filter((step) => step.length > 0)
@@ -32,20 +34,21 @@ export function DirectionsList({ directions }: Props) {
 	)
 }
 
-const styles = StyleSheet.create({
-	row: {
-		flexDirection: "row",
-		marginBottom: 4
-	},
-	number: {
-		...typography.body,
-		fontWeight: fontWeight.semibold,
-		color: colors.textMuted,
-		width: 24
-	},
-	step: {
-		...typography.body,
-		flex: 1,
-		color: colors.textDefault
-	}
-})
+const makeStyles = (colors: ThemeColors) =>
+	StyleSheet.create({
+		row: {
+			flexDirection: "row",
+			marginBottom: 4
+		},
+		number: {
+			...typography.body,
+			fontWeight: fontWeight.semibold,
+			color: colors.textMuted,
+			width: 24
+		},
+		step: {
+			...typography.body,
+			flex: 1,
+			color: colors.textDefault
+		}
+	})

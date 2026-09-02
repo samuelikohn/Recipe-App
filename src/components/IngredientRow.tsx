@@ -1,6 +1,7 @@
 import { StyleSheet, Text, View } from "react-native"
 import { Ingredient } from "../models/types"
-import { colors } from "../theme/colors"
+import { useThemedStyles } from "../theme/ThemeProvider"
+import { ThemeColors } from "../theme/colors"
 import { fontSize, fontWeight } from "../theme/typography"
 import { formatAmount } from "../utils/format"
 
@@ -16,6 +17,7 @@ type Props = {
  * base value — defaults to 1× so callers that don't care can omit it.
  */
 export function IngredientRow({ ingredient, servingsMultiplier = 1 }: Props) {
+	const styles = useThemedStyles(makeStyles)
 	const scaled = ingredient.amount * servingsMultiplier
 	const amountText = formatAmount(scaled)
 	const unitText = ingredient.unit ? ` ${ingredient.unit}` : ""
@@ -35,21 +37,22 @@ export function IngredientRow({ ingredient, servingsMultiplier = 1 }: Props) {
 	)
 }
 
-const styles = StyleSheet.create({
-	row: {
-		flexDirection: "row",
-		paddingVertical: 4
-	},
-	amount: {
-		width: 90,
-		paddingRight: 4,
-		fontSize: fontSize.body,
-		fontWeight: fontWeight.semibold,
-		color: colors.textDefault
-	},
-	name: {
-		flex: 1,
-		fontSize: fontSize.body,
-		color: colors.textDefault
-	}
-})
+const makeStyles = (colors: ThemeColors) =>
+	StyleSheet.create({
+		row: {
+			flexDirection: "row",
+			paddingVertical: 4
+		},
+		amount: {
+			width: 90,
+			paddingRight: 4,
+			fontSize: fontSize.body,
+			fontWeight: fontWeight.semibold,
+			color: colors.textDefault
+		},
+		name: {
+			flex: 1,
+			fontSize: fontSize.body,
+			color: colors.textDefault
+		}
+	})

@@ -1,6 +1,7 @@
 import { StyleSheet, Text, View } from "react-native"
 import { Component, ingredientKey } from "../models/types"
-import { colors } from "../theme/colors"
+import { useThemedStyles } from "../theme/ThemeProvider"
+import { ThemeColors } from "../theme/colors"
 import { fontSize, typography } from "../theme/typography"
 import { splitDirectionSteps } from "../utils/directions"
 import { formatDuration } from "../utils/format"
@@ -19,6 +20,7 @@ type Props = {
  * and the directions blob.
  */
 export function ComponentSection({ component, servingsMultiplier = 1 }: Props) {
+	const styles = useThemedStyles(makeStyles)
 	const totalTime = component.prep_time + component.cook_time
 	const directionSteps = splitDirectionSteps(component.directions)
 		.map((step) => step.trim())
@@ -69,32 +71,33 @@ export function ComponentSection({ component, servingsMultiplier = 1 }: Props) {
 	)
 }
 
-const styles = StyleSheet.create({
-	container: {
-		paddingVertical: 16,
-		paddingHorizontal: 16,
-		borderBottomWidth: 1,
-		borderBottomColor: colors.border
-	},
-	title: {
-		...typography.componentTitle,
-		color: colors.textBody
-	},
-	timing: {
-		marginTop: 2,
-		fontSize: fontSize.meta,
-		color: colors.textMuted
-	},
-	section: {
-		marginTop: 12
-	},
-	sectionHeader: {
-		...typography.sectionHeader,
-		color: colors.textMuted,
-		marginBottom: 6
-	},
-	equipmentRow: {
-		flexDirection: "row",
-		flexWrap: "wrap"
-	}
-})
+const makeStyles = (colors: ThemeColors) =>
+	StyleSheet.create({
+		container: {
+			paddingVertical: 16,
+			paddingHorizontal: 16,
+			borderBottomWidth: 1,
+			borderBottomColor: colors.border
+		},
+		title: {
+			...typography.componentTitle,
+			color: colors.textBody
+		},
+		timing: {
+			marginTop: 2,
+			fontSize: fontSize.meta,
+			color: colors.textMuted
+		},
+		section: {
+			marginTop: 12
+		},
+		sectionHeader: {
+			...typography.sectionHeader,
+			color: colors.textMuted,
+			marginBottom: 6
+		},
+		equipmentRow: {
+			flexDirection: "row",
+			flexWrap: "wrap"
+		}
+	})

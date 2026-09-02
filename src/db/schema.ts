@@ -29,6 +29,15 @@ CREATE TABLE IF NOT EXISTS components (
     UNIQUE (recipe_id, name)
 );
 
+-- App-level preferences (theme choice, and whatever the settings screen
+-- grows next). Deliberately a key/value bag rather than a column per
+-- setting: these are read one at a time by name and never joined against
+-- anything, so a new preference costs an INSERT rather than a migration.
+CREATE TABLE IF NOT EXISTS settings (
+    key   TEXT PRIMARY KEY NOT NULL,
+    value TEXT NOT NULL
+);
+
 CREATE TABLE IF NOT EXISTS tags (
     name TEXT PRIMARY KEY NOT NULL
 );

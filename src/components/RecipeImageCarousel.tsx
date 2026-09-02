@@ -9,7 +9,8 @@ import {
 	Text,
 	View
 } from "react-native"
-import { colors } from "../theme/colors"
+import { useThemedStyles } from "../theme/ThemeProvider"
+import { ThemeColors } from "../theme/colors"
 import { fontSize } from "../theme/typography"
 
 type Props = {
@@ -24,6 +25,7 @@ type Props = {
  */
 export function RecipeImageCarousel({ images }: Props) {
 	const [index, setIndex] = useState(0)
+	const styles = useThemedStyles(makeStyles)
 	const width = Dimensions.get("window").width
 
 	if (images.length === 0) return null
@@ -60,18 +62,19 @@ export function RecipeImageCarousel({ images }: Props) {
 	)
 }
 
-const styles = StyleSheet.create({
-	counter: {
-		position: "absolute",
-		bottom: 8,
-		right: 8,
-		backgroundColor: colors.overlay,
-		borderRadius: 10,
-		paddingHorizontal: 8,
-		paddingVertical: 2
-	},
-	counterText: {
-		color: colors.textInverse,
-		fontSize: fontSize.meta
-	}
-})
+const makeStyles = (colors: ThemeColors) =>
+	StyleSheet.create({
+		counter: {
+			position: "absolute",
+			bottom: 8,
+			right: 8,
+			backgroundColor: colors.overlay,
+			borderRadius: 10,
+			paddingHorizontal: 8,
+			paddingVertical: 2
+		},
+		counterText: {
+			color: colors.textInverse,
+			fontSize: fontSize.meta
+		}
+	})

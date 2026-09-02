@@ -1,6 +1,7 @@
 import { Alert, Image, Pressable, StyleSheet, Text, View } from "react-native"
 import { useImagePicker } from "../hooks/useImagePicker"
-import { colors } from "../theme/colors"
+import { useThemedStyles } from "../theme/ThemeProvider"
+import { ThemeColors } from "../theme/colors"
 import { deleteImageFile } from "../utils/fileStorage"
 
 type Props = {
@@ -21,6 +22,7 @@ type Props = {
  */
 export function ImagePickerGrid({ images, onChange }: Props) {
 	const { pickImage, picking } = useImagePicker()
+	const styles = useThemedStyles(makeStyles)
 
 	async function onAdd() {
 		const filepath = await pickImage()
@@ -67,33 +69,34 @@ export function ImagePickerGrid({ images, onChange }: Props) {
 
 const TILE_SIZE = 96
 
-const styles = StyleSheet.create({
-	grid: {
-		flexDirection: "row",
-		flexWrap: "wrap"
-	},
-	tile: {
-		width: TILE_SIZE,
-		height: TILE_SIZE,
-		marginRight: 8,
-		marginBottom: 8,
-		borderRadius: 8,
-		overflow: "hidden",
-		backgroundColor: colors.surfaceMuted
-	},
-	image: {
-		width: TILE_SIZE,
-		height: TILE_SIZE
-	},
-	addTile: {
-		alignItems: "center",
-		justifyContent: "center",
-		borderWidth: 1,
-		borderColor: colors.borderDashed,
-		borderStyle: "dashed"
-	},
-	addLabel: {
-		fontSize: 28,
-		color: colors.textMuted
-	}
-})
+const makeStyles = (colors: ThemeColors) =>
+	StyleSheet.create({
+		grid: {
+			flexDirection: "row",
+			flexWrap: "wrap"
+		},
+		tile: {
+			width: TILE_SIZE,
+			height: TILE_SIZE,
+			marginRight: 8,
+			marginBottom: 8,
+			borderRadius: 8,
+			overflow: "hidden",
+			backgroundColor: colors.surfaceMuted
+		},
+		image: {
+			width: TILE_SIZE,
+			height: TILE_SIZE
+		},
+		addTile: {
+			alignItems: "center",
+			justifyContent: "center",
+			borderWidth: 1,
+			borderColor: colors.borderDashed,
+			borderStyle: "dashed"
+		},
+		addLabel: {
+			fontSize: 28,
+			color: colors.textMuted
+		}
+	})

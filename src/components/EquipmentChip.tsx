@@ -1,5 +1,6 @@
 import { Pressable, StyleSheet, Text, View } from "react-native"
-import { colors } from "../theme/colors"
+import { useThemedStyles } from "../theme/ThemeProvider"
+import { ThemeColors } from "../theme/colors"
 import { fontSize } from "../theme/typography"
 
 type Props = {
@@ -13,6 +14,8 @@ type Props = {
  * inside the same ComponentSection.
  */
 export function EquipmentChip({ label, onRemove }: Props) {
+	const styles = useThemedStyles(makeStyles)
+
 	return (
 		<View style={styles.chip}>
 			<Text style={styles.label}>{label}</Text>
@@ -25,28 +28,29 @@ export function EquipmentChip({ label, onRemove }: Props) {
 	)
 }
 
-const styles = StyleSheet.create({
-	chip: {
-		flexDirection: "row",
-		alignItems: "center",
-		paddingHorizontal: 10,
-		paddingVertical: 4,
-		backgroundColor: colors.equipmentBg,
-		borderRadius: 6,
-		borderWidth: 1,
-		borderColor: colors.equipmentBorder,
-		marginRight: 6,
-		marginBottom: 6
-	},
-	label: {
-		fontSize: fontSize.meta,
-		color: colors.equipmentText
-	},
-	remove: {
-		marginLeft: 6
-	},
-	removeText: {
-		fontSize: fontSize.meta,
-		color: colors.equipmentText
-	}
-})
+const makeStyles = (colors: ThemeColors) =>
+	StyleSheet.create({
+		chip: {
+			flexDirection: "row",
+			alignItems: "center",
+			paddingHorizontal: 10,
+			paddingVertical: 4,
+			backgroundColor: colors.equipmentBg,
+			borderRadius: 6,
+			borderWidth: 1,
+			borderColor: colors.equipmentBorder,
+			marginRight: 6,
+			marginBottom: 6
+		},
+		label: {
+			fontSize: fontSize.meta,
+			color: colors.equipmentText
+		},
+		remove: {
+			marginLeft: 6
+		},
+		removeText: {
+			fontSize: fontSize.meta,
+			color: colors.equipmentText
+		}
+	})
