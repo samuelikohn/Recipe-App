@@ -2,7 +2,6 @@ import { useCallback, useLayoutEffect, useMemo, useRef, useState } from "react"
 import {
 	ActivityIndicator,
 	FlatList,
-	Modal,
 	Pressable,
 	ScrollView,
 	StyleSheet,
@@ -11,6 +10,7 @@ import {
 } from "react-native"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
 import { EmptyState } from "../components/EmptyState"
+import { HeaderMenu } from "../components/HeaderMenu"
 import { RecipeCard } from "../components/RecipeCard"
 import { TagChip } from "../components/TagChip"
 import { usePreferences } from "../hooks/PreferencesProvider"
@@ -26,7 +26,6 @@ import { ThemeColors } from "../theme/colors"
  */
 export function RecipeListScreen({ navigation }: ScreenProps<"RecipeList">) {
 	const [selectedTags, setSelectedTags] = useState<string[]>([])
-	const [menuVisible, setMenuVisible] = useState(false)
 	const insets = useSafeAreaInsets()
 	const styles = useThemedStyles(makeStyles)
 	const { preferences } = usePreferences()
@@ -74,13 +73,14 @@ export function RecipeListScreen({ navigation }: ScreenProps<"RecipeList">) {
 					>
 						<Text style={styles.headerButtonText}>＋</Text>
 					</Pressable>
-					<Pressable
-						onPress={() => setMenuVisible(true)}
-						hitSlop={8}
-						style={styles.headerButton}
-					>
-						<Text style={styles.headerButtonText}>⋮</Text>
-					</Pressable>
+					<HeaderMenu
+						items={[
+							{
+								label: "Settings",
+								onPress: () => navigation.navigate("Settings")
+							}
+						]}
+					/>
 				</View>
 			)
 		})
@@ -190,30 +190,6 @@ export function RecipeListScreen({ navigation }: ScreenProps<"RecipeList">) {
 					)}
 				/>
 			)}
-
-			<Modal
-				visible={menuVisible}
-				transparent
-				animationType="fade"
-				onRequestClose={() => setMenuVisible(false)}
-			>
-				<Pressable
-					style={styles.menuOverlay}
-					onPress={() => setMenuVisible(false)}
-				>
-					<View style={[styles.menu, { top: insets.top + 48 }]}>
-						<Pressable
-							style={styles.menuItem}
-							onPress={() => {
-								setMenuVisible(false)
-								navigation.navigate("Settings")
-							}}
-						>
-							<Text style={styles.menuItemText}>Settings</Text>
-						</Pressable>
-					</View>
-				</Pressable>
-			</Modal>
 		</View>
 	)
 }
@@ -241,29 +217,5 @@ const makeStyles = (colors: ThemeColors) =>
 		},
 		loading: {
 			marginTop: 40
-		},
-		menuOverlay: {
-			flex: 1
-		},
-		menu: {
-			position: "absolute",
-			right: 12,
-			backgroundColor: colors.background,
-			borderRadius: 8,
-			paddingVertical: 4,
-			minWidth: 140,
-			shadowColor: "#000",
-			shadowOffset: { width: 0, height: 2 },
-			shadowOpacity: 0.15,
-			shadowRadius: 6,
-			elevation: 4
-		},
-		menuItem: {
-			paddingVertical: 10,
-			paddingHorizontal: 16
-		},
-		menuItemText: {
-			fontSize: 16,
-			color: colors.primary
 		}
 	})

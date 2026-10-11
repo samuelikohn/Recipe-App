@@ -1,26 +1,49 @@
+import * as Clipboard from "expo-clipboard"
+import * as Haptics from "expo-haptics"
 import { useLayoutEffect, useState } from "react"
 import {
 	ActivityIndicator,
 	Alert,
+	Platform,
 	Pressable,
 	ScrollView,
 	StyleSheet,
 	Text,
+	ToastAndroid,
 	View
 } from "react-native"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
 import { ComponentSection } from "../components/ComponentSection"
 import { EmptyState } from "../components/EmptyState"
+import { HeaderMenu } from "../components/HeaderMenu"
 import { RecipeImageCarousel } from "../components/RecipeImageCarousel"
 import { TagChip } from "../components/TagChip"
 import { deleteRecipe } from "../db/repositories/recipes"
 import { useRecipe } from "../hooks/useRecipe"
+import { Recipe } from "../models/types"
 import { ScreenProps } from "../navigation/types"
 import { useThemedStyles } from "../theme/ThemeProvider"
 import { ThemeColors } from "../theme/colors"
 import { fontSize, fontWeight, typography } from "../theme/typography"
 import { deleteImageFile } from "../utils/fileStorage"
 import { formatDuration } from "../utils/format"
+import { formatRecipeAsText } from "../utils/recipeText"
+
+async function onCopyAsText(recipe: Recipe, servings: number) {
+	try {
+		await Clipboard.setStringAsync(formatRecipeAsText(recipe, servings))
+	} catch {
+		Alert.alert("Couldn't copy recipe")
+		return
+	}
+	// iOS has no toast; a success haptic confirms without making the user
+	// dismiss anything.
+	if (Platform.OS === "ios") {
+		Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success)
+	} else {
+		ToastAndroid.show("Copied to clipboard", ToastAndroid.SHORT)
+	}
+}
 
 export function RecipeDetailScreen({
 	route,
@@ -37,20 +60,28 @@ export function RecipeDetailScreen({
 			title: recipe?.name ?? "Recipe",
 			headerRight: () =>
 				recipe ? (
-					<Pressable
-						onPress={() =>
-							navigation.navigate("RecipeForm", {
-								name: recipe.name
-							})
-						}
-						hitSlop={8}
-						style={styles.headerButton}
-					>
-						<Text style={styles.headerButtonText}>Edit</Text>
-					</Pressable>
+					<HeaderMenu
+						items={[
+							{
+								label: "Edit",
+								onPress: () =>
+									navigation.navigate("RecipeForm", {
+										name: recipe.name
+									})
+							},
+							{
+								label: "Copy as text",
+								onPress: () =>
+									onCopyAsText(
+										recipe,
+										servings ?? recipe.num_servings
+									)
+							}
+						]}
+					/>
 				) : null
 		})
-	}, [navigation, recipe, styles])
+	}, [navigation, recipe, servings])
 
 	if (loading) {
 		return <ActivityIndicator style={styles.loading} />
@@ -181,13 +212,6 @@ const makeStyles = (colors: ThemeColors) =>
 		},
 		loading: {
 			marginTop: 40
-		},
-		headerButton: {
-			paddingHorizontal: 8
-		},
-		headerButtonText: {
-			fontSize: fontSize.input,
-			color: colors.primary
 		},
 		header: {
 			padding: 16,

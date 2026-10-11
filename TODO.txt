@@ -4,9 +4,13 @@ Tags
 - make tags searchable
 - select tags by pressing on recipe cards
 Share recipes
-- Export pdf/html/text/markdown/json, for copy/email/text msg
+- Export as pdf
 - write to binary file
 - import from binary file, validate schema
 Move ingredients focus to next field on click done
 if equipment is empty, close on check done
 copy recipes in app
+
+Check:
+- copy as text
+- download images
