@@ -8,6 +8,7 @@ import {
 } from "react"
 import { getAllSettings, setSetting } from "../db/repositories/settings"
 import { ThemeMode } from "../theme/colors"
+import { FONT_SCALE_MAX, FONT_SCALE_MIN } from "../theme/typography"
 
 /**
  * Every user-facing preference the settings screen can change. Add a field
@@ -19,6 +20,8 @@ export type Preferences = {
 	themeMode: ThemeMode
 	/** Whether list screens put a result count in their header title. */
 	showRecipeCount: boolean
+	/** Multiplier applied to every font size; 1 = design size. Read through useTheme. */
+	fontScale: number
 }
 
 /**
@@ -27,12 +30,14 @@ export type Preferences = {
  */
 const KEYS = {
 	themeMode: "theme_mode",
-	showRecipeCount: "show_recipe_count"
+	showRecipeCount: "show_recipe_count",
+	fontScale: "font_scale"
 } as const satisfies Record<keyof Preferences, string>
 
 const DEFAULTS: Preferences = {
 	themeMode: "system",
-	showRecipeCount: true
+	showRecipeCount: true,
+	fontScale: 1
 }
 
 type PreferencesContextValue = {
@@ -57,8 +62,12 @@ function isThemeMode(value: string | undefined): value is ThemeMode {
 function hydrate(rows: Record<string, string>): Preferences {
 	const storedTheme = rows[KEYS.themeMode]
 	const storedCount = rows[KEYS.showRecipeCount]
+	const storedScale = Number(rows[KEYS.fontScale])
 
 	return {
+		fontScale: Number.isFinite(storedScale)
+			? Math.min(FONT_SCALE_MAX, Math.max(FONT_SCALE_MIN, storedScale))
+			: DEFAULTS.fontScale,
 		themeMode: isThemeMode(storedTheme) ? storedTheme : DEFAULTS.themeMode,
 		showRecipeCount:
 			storedCount === undefined

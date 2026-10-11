@@ -1,5 +1,3 @@
-settings page
-- text size slider
 Tags
 - make tags searchable
 - select tags by pressing on recipe cards
@@ -10,8 +8,9 @@ Share recipes
 Move ingredients focus to next field on click done
 if equipment is empty, close on check done
 add component to other recipe
+move delete to recipe kebab
 
-Check:
-- copy as text
-- download images
-- dupe recipe
+text size slider
+    - tags are cut off on bottom
+    - serving counter +/- are off center
+    - download icon doesn't scale

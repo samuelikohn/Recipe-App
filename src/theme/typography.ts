@@ -19,6 +19,14 @@ export const fontSize = {
 	icon: 28
 } as const
 
+/**
+ * Bounds for the user's "Text size" preference, a multiplier applied to
+ * every size above by useThemedStyles. 1 is the design size.
+ */
+export const FONT_SCALE_MIN = 0.85
+export const FONT_SCALE_MAX = 1.5
+export const FONT_SCALE_STEP = 0.05
+
 export const fontWeight = {
 	regular: "400",
 	semibold: "600",

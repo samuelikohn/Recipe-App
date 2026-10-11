@@ -1,10 +1,17 @@
-import { ReactNode, useLayoutEffect } from "react"
+import Slider from "@react-native-community/slider"
+import { ReactNode, useLayoutEffect, useState } from "react"
 import { StyleSheet, Switch, Text, View } from "react-native"
 import { usePreferences } from "../hooks/PreferencesProvider"
 import { ScreenProps } from "../navigation/types"
 import { useTheme, useThemedStyles } from "../theme/ThemeProvider"
 import { ThemeColors } from "../theme/colors"
-import { fontSize, typography } from "../theme/typography"
+import {
+	FONT_SCALE_MAX,
+	FONT_SCALE_MIN,
+	FONT_SCALE_STEP,
+	fontSize,
+	typography
+} from "../theme/typography"
 
 export function SettingsScreen({ navigation }: ScreenProps<"Settings">) {
 	const { mode, isDark, setMode } = useTheme()
@@ -36,6 +43,7 @@ export function SettingsScreen({ navigation }: ScreenProps<"Settings">) {
 					value={isDark}
 					onValueChange={toggleTheme}
 				/>
+				<TextSizeRow />
 			</Section>
 
 			<Section title="Recipe list">
@@ -95,6 +103,56 @@ function ToggleRow({ title, subtitle, value, onValueChange }: ToggleRowProps) {
 	)
 }
 
+/**
+ * Text-size slider. While dragging, only this row previews the new size; the
+ * preference is committed on release, so the rest of the app re-lays out
+ * once rather than on every frame under the user's finger.
+ */
+function TextSizeRow() {
+	const { colors, fontScale, setFontScale } = useTheme()
+	const styles = useThemedStyles(makeStyles)
+	const [draft, setDraft] = useState(fontScale)
+
+	// Slider steps accumulate float error (1.1500000000000001); snapping to
+	// two decimals keeps stored values and style-cache keys clean.
+	const snap = (value: number) => Math.round(value * 100) / 100
+
+	return (
+		<View style={[styles.row, styles.sliderRow]}>
+			<View style={styles.sliderHeader}>
+				<Text style={styles.rowTitle}>Text size</Text>
+				<Text style={styles.sliderValue}>
+					{Math.round(draft * 100)}%
+				</Text>
+			</View>
+			<Slider
+				value={fontScale}
+				minimumValue={FONT_SCALE_MIN}
+				maximumValue={FONT_SCALE_MAX}
+				step={FONT_SCALE_STEP}
+				onValueChange={(value) => setDraft(snap(value))}
+				onSlidingComplete={(value) => setFontScale(snap(value))}
+				minimumTrackTintColor={colors.primary}
+				maximumTrackTintColor={colors.borderStrong}
+				thumbTintColor={colors.primary}
+			/>
+			{/* styles are already scaled by fontScale; divide it back out so
+			    the sample shows exactly the size being previewed. */}
+			<Text
+				style={[
+					styles.rowSubtitle,
+					{
+						fontSize:
+							(styles.rowSubtitle.fontSize * draft) / fontScale
+					}
+				]}
+			>
+				The quick brown fox jumps over the lazy dog.
+			</Text>
+		</View>
+	)
+}
+
 const makeStyles = (colors: ThemeColors) =>
 	StyleSheet.create({
 		container: {
@@ -132,6 +190,21 @@ const makeStyles = (colors: ThemeColors) =>
 		rowSubtitle: {
 			marginTop: 2,
 			fontSize: fontSize.meta,
+			color: colors.textMuted
+		},
+		// The slider row stacks title, slider, and sample vertically instead
+		// of the label-left/control-right layout of the other rows.
+		sliderRow: {
+			flexDirection: "column",
+			alignItems: "stretch"
+		},
+		sliderHeader: {
+			flexDirection: "row",
+			justifyContent: "space-between",
+			alignItems: "center"
+		},
+		sliderValue: {
+			fontSize: fontSize.body,
 			color: colors.textMuted
 		}
 	})

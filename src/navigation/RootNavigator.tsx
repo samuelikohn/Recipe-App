@@ -5,6 +5,7 @@ import {
 	Theme
 } from "@react-navigation/native"
 import { createNativeStackNavigator } from "@react-navigation/native-stack"
+import { Platform } from "react-native"
 import { useTheme } from "../theme/ThemeProvider"
 import { ThemeColors } from "../theme/colors"
 import { ComponentFormScreen } from "../screens/ComponentForm"
@@ -16,6 +17,8 @@ import { SettingsScreen } from "../screens/Settings"
 import { RootStackParamList } from "./types"
 
 const Stack = createNativeStackNavigator<RootStackParamList>()
+
+const HEADER_TITLE_SIZE = Platform.OS === "ios" ? 17 : 20
 
 /**
  * Maps our palette onto the handful of colors React Navigation paints itself
@@ -48,11 +51,21 @@ function navigationTheme(colors: ThemeColors, isDark: boolean): Theme {
  * before any screen tries to read from it.
  */
 export function RootNavigator() {
-	const { colors, isDark } = useTheme()
+	const { colors, isDark, fontScale } = useTheme()
 
 	return (
 		<NavigationContainer theme={navigationTheme(colors, isDark)}>
-			<Stack.Navigator initialRouteName="RecipeList">
+			<Stack.Navigator
+				initialRouteName="RecipeList"
+				screenOptions={{
+					// Header titles aren't built through useThemedStyles, so the
+					// text-size preference is applied here by hand, on top of
+					// native-stack's own default title size per platform.
+					headerTitleStyle: {
+						fontSize: HEADER_TITLE_SIZE * fontScale
+					}
+				}}
+			>
 				<Stack.Screen name="RecipeList" component={RecipeListScreen} />
 				<Stack.Screen
 					name="RecipeDetail"
