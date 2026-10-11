@@ -3,7 +3,7 @@ settings page
 Tags
 - make tags searchable
 - select tags by pressing on recipe cards
-Can reorder/download images from RecipeForm
+Can download images from RecipeForm
 Store images in blob in sqlite
 Share recipes
 - Export pdf/html/text/markdown/json, for copy/email/text msg
@@ -11,3 +11,4 @@ Share recipes
 - import from binary file, validate schema
 Move ingredients focus to next field on click done
 if equipment is empty, close on check done
+copy recipes in app

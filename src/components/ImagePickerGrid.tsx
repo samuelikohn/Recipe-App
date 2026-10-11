@@ -1,7 +1,11 @@
-import { Alert, Image, Pressable, StyleSheet, Text, View } from "react-native"
+import { Alert, Image, Pressable, StyleSheet, Text } from "react-native"
+import DraggableFlatList, {
+	ScaleDecorator
+} from "react-native-draggable-flatlist"
 import { useImagePicker } from "../hooks/useImagePicker"
 import { useThemedStyles } from "../theme/ThemeProvider"
 import { ThemeColors } from "../theme/colors"
+import { fontSize, fontWeight } from "../theme/typography"
 import { deleteImageFile } from "../utils/fileStorage"
 
 type Props = {
@@ -10,11 +14,20 @@ type Props = {
 }
 
 /**
- * Photo grid for RecipeFormScreen: a tile per existing image plus a
+ * Photo strip for RecipeFormScreen: a tile per existing image plus a
  * trailing "+" tile that launches the OS image picker. Persists the picked
  * image through useImagePicker (which copies it into the app's document
  * directory) before adding to the list, so callers only ever see stable
  * filepaths.
+ *
+ * Holding a tile picks it up for a drag reorder; the "x" badge in its corner
+ * is the way to remove one. The tiles lay out as a single horizontally
+ * scrolling row rather than a wrapping grid because the sortable list only
+ * reorders along one axis.
+ *
+ * Filepaths are unique per pick (useImagePicker copies each selection to a
+ * fresh name), so they double as the list's row keys — no separate identity
+ * bookkeeping needed here.
  *
  * Removing a tile deletes the underlying file. That's safe because
  * RecipeFormScreen never resurrects removed entries — the draft state
@@ -46,24 +59,46 @@ export function ImagePickerGrid({ images, onChange }: Props) {
 	}
 
 	return (
-		<View style={styles.grid}>
-			{images.map((filepath) => (
+		<DraggableFlatList
+			data={images}
+			horizontal
+			keyExtractor={(filepath) => filepath}
+			showsHorizontalScrollIndicator={false}
+			contentContainerStyle={styles.strip}
+			renderItem={({ item: filepath, drag, isActive }) => (
+				<ScaleDecorator>
+					<Pressable
+						onLongPress={drag}
+						delayLongPress={500}
+						disabled={isActive}
+						style={styles.tile}
+					>
+						<Image
+							source={{ uri: filepath }}
+							style={styles.image}
+						/>
+						<Pressable
+							onPress={() => onRemove(filepath)}
+							hitSlop={8}
+							accessibilityLabel="Remove photo"
+							style={styles.removeButton}
+						>
+							<Text style={styles.removeText}>✕</Text>
+						</Pressable>
+					</Pressable>
+				</ScaleDecorator>
+			)}
+			onDragEnd={({ data }) => onChange(data)}
+			ListFooterComponent={
 				<Pressable
-					key={filepath}
-					onLongPress={() => onRemove(filepath)}
-					style={styles.tile}
+					onPress={onAdd}
+					disabled={picking}
+					style={[styles.tile, styles.addTile]}
 				>
-					<Image source={{ uri: filepath }} style={styles.image} />
+					<Text style={styles.addLabel}>{picking ? "…" : "+"}</Text>
 				</Pressable>
-			))}
-			<Pressable
-				onPress={onAdd}
-				disabled={picking}
-				style={[styles.tile, styles.addTile]}
-			>
-				<Text style={styles.addLabel}>{picking ? "…" : "+"}</Text>
-			</Pressable>
-		</View>
+			}
+		/>
 	)
 }
 
@@ -71,22 +106,44 @@ const TILE_SIZE = 96
 
 const makeStyles = (colors: ThemeColors) =>
 	StyleSheet.create({
-		grid: {
-			flexDirection: "row",
-			flexWrap: "wrap"
+		// Must not fix a width: the FlatList sizes its scrollable content from
+		// this style, and the sortable list clamps a dragged tile to that
+		// content extent. Pinning it to one tile both killed scrolling and
+		// forced every lifted tile to snap to the first slot.
+		strip: {
+			paddingBottom: 8
 		},
 		tile: {
 			width: TILE_SIZE,
 			height: TILE_SIZE,
 			marginRight: 8,
-			marginBottom: 8,
 			borderRadius: 8,
-			overflow: "hidden",
 			backgroundColor: colors.surfaceMuted
 		},
 		image: {
 			width: TILE_SIZE,
-			height: TILE_SIZE
+			height: TILE_SIZE,
+			borderRadius: 8
+		},
+		removeButton: {
+			position: "absolute",
+			top: 4,
+			right: 4,
+			width: 22,
+			height: 22,
+			borderRadius: 11,
+			alignItems: "center",
+			justifyContent: "center",
+			backgroundColor: colors.overlay
+		},
+		removeText: {
+			color: colors.textInverse,
+			fontSize: fontSize.input,
+			fontWeight: fontWeight.semibold,
+			// The glyph sits low in its line box at this size; nudging it up
+			// keeps it centered in the circle.
+			lineHeight: fontSize.input,
+			marginTop: -1
 		},
 		addTile: {
 			alignItems: "center",
