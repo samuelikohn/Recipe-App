@@ -34,7 +34,14 @@
 					"backgroundColor": "#ffffff"
 				}
 			],
-			"expo-sqlite"
+			"expo-sqlite",
+			[
+				"expo-media-library",
+				{
+					"savePhotosPermission": "Allow Recipes to save recipe photos to your library.",
+					"isAccessMediaLocationEnabled": false
+				}
+			]
 		],
 		"extra": {
 			"eas": {

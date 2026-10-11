@@ -3,8 +3,6 @@ settings page
 Tags
 - make tags searchable
 - select tags by pressing on recipe cards
-Can download images from RecipeForm
-Store images in blob in sqlite
 Share recipes
 - Export pdf/html/text/markdown/json, for copy/email/text msg
 - write to binary file

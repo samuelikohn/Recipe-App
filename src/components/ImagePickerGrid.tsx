@@ -1,12 +1,22 @@
-import { Alert, Image, Pressable, StyleSheet, Text } from "react-native"
+import { Ionicons } from "@expo/vector-icons"
+import * as Haptics from "expo-haptics"
+import {
+	Alert,
+	Image,
+	Platform,
+	Pressable,
+	StyleSheet,
+	Text,
+	ToastAndroid
+} from "react-native"
 import DraggableFlatList, {
 	ScaleDecorator
 } from "react-native-draggable-flatlist"
 import { useImagePicker } from "../hooks/useImagePicker"
-import { useThemedStyles } from "../theme/ThemeProvider"
+import { useTheme, useThemedStyles } from "../theme/ThemeProvider"
 import { ThemeColors } from "../theme/colors"
 import { fontSize, fontWeight } from "../theme/typography"
-import { deleteImageFile } from "../utils/fileStorage"
+import { deleteImageFile, saveImageToDevice } from "../utils/fileStorage"
 
 type Props = {
 	images: string[]
@@ -21,7 +31,9 @@ type Props = {
  * filepaths.
  *
  * Holding a tile picks it up for a drag reorder; the "x" badge in its corner
- * is the way to remove one. The tiles lay out as a single horizontally
+ * is the way to remove one. The download badge in the opposite corner
+ * copies the photo out of the app — to Downloads on Android, to the Photos
+ * library on iOS. The tiles lay out as a single horizontally
  * scrolling row rather than a wrapping grid because the sortable list only
  * reorders along one axis.
  *
@@ -36,6 +48,7 @@ type Props = {
 export function ImagePickerGrid({ images, onChange }: Props) {
 	const { pickImage, picking } = useImagePicker()
 	const styles = useThemedStyles(makeStyles)
+	const { colors } = useTheme()
 
 	async function onAdd() {
 		const filepath = await pickImage()
@@ -58,6 +71,26 @@ export function ImagePickerGrid({ images, onChange }: Props) {
 		])
 	}
 
+	async function onDownload(filepath: string) {
+		try {
+			const saved = await saveImageToDevice(filepath)
+			if (!saved) {
+				return
+			}
+			// iOS has no toast; a success haptic confirms without making
+			// the user dismiss anything.
+			if (Platform.OS === "ios") {
+				Haptics.notificationAsync(
+					Haptics.NotificationFeedbackType.Success
+				)
+			} else {
+				ToastAndroid.show("Saved to Downloads", ToastAndroid.SHORT)
+			}
+		} catch {
+			Alert.alert("Couldn't save photo")
+		}
+	}
+
 	return (
 		<DraggableFlatList
 			data={images}
@@ -78,10 +111,22 @@ export function ImagePickerGrid({ images, onChange }: Props) {
 							style={styles.image}
 						/>
 						<Pressable
+							onPress={() => onDownload(filepath)}
+							hitSlop={8}
+							accessibilityLabel="Download photo"
+							style={[styles.badge, styles.downloadButton]}
+						>
+							<Ionicons
+								name="download-outline"
+								size={14}
+								color={colors.textInverse}
+							/>
+						</Pressable>
+						<Pressable
 							onPress={() => onRemove(filepath)}
 							hitSlop={8}
 							accessibilityLabel="Remove photo"
-							style={styles.removeButton}
+							style={[styles.badge, styles.removeButton]}
 						>
 							<Text style={styles.removeText}>✕</Text>
 						</Pressable>
@@ -125,16 +170,21 @@ const makeStyles = (colors: ThemeColors) =>
 			height: TILE_SIZE,
 			borderRadius: 8
 		},
-		removeButton: {
+		badge: {
 			position: "absolute",
 			top: 4,
-			right: 4,
 			width: 22,
 			height: 22,
 			borderRadius: 11,
 			alignItems: "center",
 			justifyContent: "center",
 			backgroundColor: colors.overlay
+		},
+		downloadButton: {
+			left: 4
+		},
+		removeButton: {
+			right: 4
 		},
 		removeText: {
 			color: colors.textInverse,
