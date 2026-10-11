@@ -92,6 +92,16 @@ export async function getRecipeByName(name: string): Promise<Recipe | null> {
 	return hydrateRecipe(db, recipeRow)
 }
 
+/** Cheap existence check for name-collision handling, without hydrating the tree. */
+export async function recipeNameExists(name: string): Promise<boolean> {
+	const db = await getDb()
+	const row = await db.getFirstAsync<{ id: number }>(
+		`SELECT id FROM recipes WHERE name = ?;`,
+		[name]
+	)
+	return row !== null
+}
+
 // ---------------------------------------------------------------------------
 // Writes
 // ---------------------------------------------------------------------------

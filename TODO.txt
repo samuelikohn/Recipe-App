@@ -9,8 +9,9 @@ Share recipes
 - import from binary file, validate schema
 Move ingredients focus to next field on click done
 if equipment is empty, close on check done
-copy recipes in app
+add component to other recipe
 
 Check:
 - copy as text
 - download images
+- dupe recipe

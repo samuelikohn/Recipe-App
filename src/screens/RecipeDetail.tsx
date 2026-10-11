@@ -18,14 +18,18 @@ import { EmptyState } from "../components/EmptyState"
 import { HeaderMenu } from "../components/HeaderMenu"
 import { RecipeImageCarousel } from "../components/RecipeImageCarousel"
 import { TagChip } from "../components/TagChip"
-import { deleteRecipe } from "../db/repositories/recipes"
+import {
+	createRecipe,
+	deleteRecipe,
+	recipeNameExists
+} from "../db/repositories/recipes"
 import { useRecipe } from "../hooks/useRecipe"
 import { Recipe } from "../models/types"
 import { ScreenProps } from "../navigation/types"
 import { useThemedStyles } from "../theme/ThemeProvider"
 import { ThemeColors } from "../theme/colors"
 import { fontSize, fontWeight, typography } from "../theme/typography"
-import { deleteImageFile } from "../utils/fileStorage"
+import { deleteImageFile, persistPickedImage } from "../utils/fileStorage"
 import { formatDuration } from "../utils/format"
 import { formatRecipeAsText } from "../utils/recipeText"
 
@@ -43,6 +47,35 @@ async function onCopyAsText(recipe: Recipe, servings: number) {
 	} else {
 		ToastAndroid.show("Copied to clipboard", ToastAndroid.SHORT)
 	}
+}
+
+/**
+ * Saves a copy of `recipe` as "<name> (copy)" — or "(copy 2)", "(copy 3)",
+ * … if that name is taken, since names are unique — and returns the new name.
+ *
+ * Image files are duplicated rather than shared: filepaths are the images
+ * table's primary key, and deleting either recipe deletes its files, which
+ * would otherwise break the other one's photos.
+ */
+async function duplicateRecipe(recipe: Recipe): Promise<string> {
+	let name = `${recipe.name} (copy)`
+	for (let n = 2; await recipeNameExists(name); n++) {
+		name = `${recipe.name} (copy ${n})`
+	}
+
+	const images: string[] = []
+	try {
+		for (const filepath of recipe.images) {
+			images.push(await persistPickedImage(filepath))
+		}
+		await createRecipe({ ...recipe, name, images })
+	} catch (e) {
+		for (const filepath of images) {
+			await deleteImageFile(filepath)
+		}
+		throw e
+	}
+	return name
 }
 
 export function RecipeDetailScreen({
@@ -68,6 +101,20 @@ export function RecipeDetailScreen({
 									navigation.navigate("RecipeForm", {
 										name: recipe.name
 									})
+							},
+							{
+								label: "Duplicate",
+								onPress: async () => {
+									try {
+										const copyName =
+											await duplicateRecipe(recipe)
+										navigation.push("RecipeDetail", {
+											name: copyName
+										})
+									} catch {
+										Alert.alert("Couldn't duplicate recipe")
+									}
+								}
 							},
 							{
 								label: "Copy as text",
