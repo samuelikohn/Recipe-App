@@ -267,6 +267,12 @@ export function RecipeDetailScreen({
 					key={component.id}
 					component={component}
 					servingsMultiplier={multiplier}
+					onCopyToRecipe={() =>
+						navigation.navigate("ComponentCopyTarget", {
+							sourceRecipeName: recipe.name,
+							component
+						})
+					}
 				/>
 			))}
 		</ScrollView>

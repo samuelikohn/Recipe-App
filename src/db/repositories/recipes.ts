@@ -8,6 +8,16 @@ import { upsertTag } from "./tags"
 
 type Db = SQLite.SQLiteDatabase
 
+/** The target recipe already contains a component with the copied name. */
+export class ComponentNameConflictError extends Error {
+	constructor(componentName: string, recipeName: string) {
+		super(
+			`Recipe "${recipeName}" already contains a component named "${componentName}".`
+		)
+		this.name = "ComponentNameConflictError"
+	}
+}
+
 // ---------------------------------------------------------------------------
 // Reads
 // ---------------------------------------------------------------------------
@@ -173,6 +183,82 @@ export async function updateRecipe(
 export async function deleteRecipe(name: string): Promise<void> {
 	const db = await getDb()
 	await db.runAsync(`DELETE FROM recipes WHERE name = ?;`, [name])
+	notifyChange()
+}
+
+/**
+ * Appends a complete copy of `component` to another recipe. The source
+ * component's id is deliberately ignored: component ids are database-owned
+ * and unique across every recipe.
+ */
+export async function copyComponentToRecipe(
+	targetRecipeName: string,
+	component: Component
+): Promise<void> {
+	const db = await getDb()
+
+	await db.withTransactionAsync(async () => {
+		const target = await db.getFirstAsync<{ id: number }>(
+			`SELECT id FROM recipes WHERE name = ?;`,
+			[targetRecipeName]
+		)
+		if (!target) {
+			throw new Error(
+				`copyComponentToRecipe: no recipe named "${targetRecipeName}" exists.`
+			)
+		}
+
+		const duplicate = await db.getFirstAsync<{ id: number }>(
+			`SELECT id FROM components WHERE recipe_id = ? AND name = ?;`,
+			[target.id, component.name]
+		)
+		if (duplicate) {
+			throw new ComponentNameConflictError(
+				component.name,
+				targetRecipeName
+			)
+		}
+
+		const position = await db.getFirstAsync<{ position: number }>(
+			`SELECT COALESCE(MAX(position), -1) + 1 AS position FROM components WHERE recipe_id = ?;`,
+			[target.id]
+		)
+		const componentResult = await db.runAsync(
+			`INSERT INTO components (recipe_id, name, directions, prep_time, cook_time, position) VALUES (?, ?, ?, ?, ?, ?);`,
+			[
+				target.id,
+				component.name,
+				component.directions,
+				component.prep_time,
+				component.cook_time,
+				position?.position ?? 0
+			]
+		)
+		const componentId = componentResult.lastInsertRowId
+
+		for (const ingredient of component.ingredients) {
+			await upsertIngredient(db, ingredient.name)
+			await db.runAsync(
+				`INSERT INTO component_ingredients (component_id, ingredient, amount, unit, prep) VALUES (?, ?, ?, ?, ?);`,
+				[
+					componentId,
+					ingredient.name,
+					ingredient.amount,
+					ingredient.unit,
+					ingredient.prep
+				]
+			)
+		}
+
+		for (const equipmentName of component.equipment) {
+			await upsertEquipment(db, equipmentName)
+			await db.runAsync(
+				`INSERT INTO component_equipment (component_id, equipment) VALUES (?, ?);`,
+				[componentId, equipmentName]
+			)
+		}
+	})
+
 	notifyChange()
 }
 

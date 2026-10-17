@@ -1,8 +1,8 @@
-import { StyleSheet, Text, View } from "react-native"
+import { Pressable, StyleSheet, Text, View } from "react-native"
 import { Component, ingredientKey } from "../models/types"
 import { useThemedStyles } from "../theme/ThemeProvider"
 import { ThemeColors } from "../theme/colors"
-import { fontSize, typography } from "../theme/typography"
+import { fontSize, fontWeight, typography } from "../theme/typography"
 import { splitDirectionSteps } from "../utils/directions"
 import { formatDuration } from "../utils/format"
 import { DirectionsList } from "./DirectionsList"
@@ -12,6 +12,7 @@ import { IngredientRow } from "./IngredientRow"
 type Props = {
 	component: Component
 	servingsMultiplier?: number
+	onCopyToRecipe: () => void
 }
 
 /**
@@ -19,7 +20,11 @@ type Props = {
  * timing, ingredient list scaled by servingsMultiplier, equipment chips,
  * and the directions blob.
  */
-export function ComponentSection({ component, servingsMultiplier = 1 }: Props) {
+export function ComponentSection({
+	component,
+	servingsMultiplier = 1,
+	onCopyToRecipe
+}: Props) {
 	const styles = useThemedStyles(makeStyles)
 	const totalTime = component.prep_time + component.cook_time
 	const directionSteps = splitDirectionSteps(component.directions)
@@ -67,6 +72,12 @@ export function ComponentSection({ component, servingsMultiplier = 1 }: Props) {
 					<DirectionsList directions={component.directions} />
 				</View>
 			) : null}
+
+			<Pressable onPress={onCopyToRecipe} style={styles.copyButton}>
+				<Text style={styles.copyButtonText}>
+					Copy to another recipe
+				</Text>
+			</Pressable>
 		</View>
 	)
 }
@@ -99,5 +110,18 @@ const makeStyles = (colors: ThemeColors) =>
 		equipmentRow: {
 			flexDirection: "row",
 			flexWrap: "wrap"
+		},
+		copyButton: {
+			alignSelf: "flex-start",
+			marginTop: 16,
+			paddingHorizontal: 12,
+			paddingVertical: 8,
+			borderRadius: 8,
+			backgroundColor: colors.primary
+		},
+		copyButtonText: {
+			fontSize: fontSize.meta,
+			fontWeight: fontWeight.semibold,
+			color: colors.primaryOn
 		}
 	})

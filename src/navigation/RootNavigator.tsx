@@ -9,6 +9,7 @@ import { Platform } from "react-native"
 import { useTheme } from "../theme/ThemeProvider"
 import { ThemeColors } from "../theme/colors"
 import { ComponentFormScreen } from "../screens/ComponentForm"
+import { ComponentCopyTargetScreen } from "../screens/ComponentCopyTarget"
 import { RecipeDetailScreen } from "../screens/RecipeDetail"
 import { RecipeFormScreen } from "../screens/RecipeForm"
 import { RecipeListScreen } from "../screens/RecipeList"
@@ -75,6 +76,10 @@ export function RootNavigator() {
 				<Stack.Screen
 					name="ComponentForm"
 					component={ComponentFormScreen}
+				/>
+				<Stack.Screen
+					name="ComponentCopyTarget"
+					component={ComponentCopyTargetScreen}
 				/>
 				<Stack.Screen name="Search" component={SearchScreen} />
 				<Stack.Screen name="Settings" component={SettingsScreen} />

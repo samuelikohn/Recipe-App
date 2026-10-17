@@ -23,6 +23,10 @@ export type RootStackParamList = {
 		initial: Component | null
 		onSubmit: (component: Component) => void
 	}
+	ComponentCopyTarget: {
+		sourceRecipeName: string
+		component: Component
+	}
 	Search: undefined
 	Settings: undefined
 }
