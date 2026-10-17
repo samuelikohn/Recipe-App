@@ -31,6 +31,7 @@ import { ThemeColors } from "../theme/colors"
 import { fontSize, fontWeight, typography } from "../theme/typography"
 import { deleteImageFile, persistPickedImage } from "../utils/fileStorage"
 import { formatDuration } from "../utils/format"
+import { exportRecipeAsPdf } from "../utils/recipePdf"
 import { formatRecipeAsText } from "../utils/recipeText"
 
 async function onCopyAsText(recipe: Recipe, servings: number) {
@@ -46,6 +47,14 @@ async function onCopyAsText(recipe: Recipe, servings: number) {
 		Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success)
 	} else {
 		ToastAndroid.show("Copied to clipboard", ToastAndroid.SHORT)
+	}
+}
+
+async function onExportAsPdf(recipe: Recipe, servings: number) {
+	try {
+		await exportRecipeAsPdf(recipe, servings)
+	} catch {
+		Alert.alert("Couldn't export recipe as PDF")
 	}
 }
 
@@ -120,6 +129,14 @@ export function RecipeDetailScreen({
 								label: "Copy as text",
 								onPress: () =>
 									onCopyAsText(
+										recipe,
+										servings ?? recipe.num_servings
+									)
+							},
+							{
+								label: "Export as PDF",
+								onPress: () =>
+									onExportAsPdf(
 										recipe,
 										servings ?? recipe.num_servings
 									)
