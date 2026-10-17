@@ -13,4 +13,5 @@ move delete to recipe kebab
 text size slider
     - tags are cut off on bottom
     - serving counter +/- are off center
+    - background for image X
     - download icon doesn't scale

@@ -41,7 +41,7 @@ export function TagChip({ label, selected, onPress, onRemove }: Props) {
 	return body
 }
 
-const makeStyles = (colors: ThemeColors) =>
+const makeStyles = (colors: ThemeColors, fontScale: number) =>
 	StyleSheet.create({
 		pressable: {
 			marginRight: 6,
@@ -50,10 +50,10 @@ const makeStyles = (colors: ThemeColors) =>
 		chip: {
 			flexDirection: "row",
 			alignItems: "center",
-			paddingHorizontal: 10,
-			paddingVertical: 4,
+			paddingHorizontal: 10 * fontScale,
+			paddingVertical: 4 * fontScale,
 			backgroundColor: colors.border,
-			borderRadius: 12,
+			borderRadius: 12 * fontScale,
 			marginRight: 6,
 			marginBottom: 6
 		},
@@ -63,13 +63,13 @@ const makeStyles = (colors: ThemeColors) =>
 		label: {
 			fontSize: fontSize.meta,
 			color: colors.textDefault,
-			height: 16
+			height: 16 * fontScale
 		},
 		labelSelected: {
 			color: colors.primaryOn
 		},
 		remove: {
-			marginLeft: 6
+			marginLeft: 6 * fontScale
 		},
 		removeText: {
 			fontSize: fontSize.meta,

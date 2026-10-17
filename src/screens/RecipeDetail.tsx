@@ -251,7 +251,7 @@ export function RecipeDetailScreen({
 	)
 }
 
-const makeStyles = (colors: ThemeColors) =>
+const makeStyles = (colors: ThemeColors, fontScale: number) =>
 	StyleSheet.create({
 		container: {
 			flex: 1,
@@ -281,9 +281,9 @@ const makeStyles = (colors: ThemeColors) =>
 			marginRight: 12
 		},
 		servingsButton: {
-			width: 28,
-			height: 28,
-			borderRadius: 14,
+			width: 28 * fontScale,
+			height: 28 * fontScale,
+			borderRadius: 14 * fontScale,
 			alignItems: "center",
 			justifyContent: "center",
 			backgroundColor: colors.border,

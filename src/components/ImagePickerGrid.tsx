@@ -48,7 +48,7 @@ type Props = {
 export function ImagePickerGrid({ images, onChange }: Props) {
 	const { pickImage, picking } = useImagePicker()
 	const styles = useThemedStyles(makeStyles)
-	const { colors } = useTheme()
+	const { colors, fontScale } = useTheme()
 
 	async function onAdd() {
 		const filepath = await pickImage()
@@ -118,7 +118,7 @@ export function ImagePickerGrid({ images, onChange }: Props) {
 						>
 							<Ionicons
 								name="download-outline"
-								size={14}
+								size={14 * fontScale}
 								color={colors.textInverse}
 							/>
 						</Pressable>
@@ -149,7 +149,7 @@ export function ImagePickerGrid({ images, onChange }: Props) {
 
 const TILE_SIZE = 96
 
-const makeStyles = (colors: ThemeColors) =>
+const makeStyles = (colors: ThemeColors, fontScale: number) =>
 	StyleSheet.create({
 		// Must not fix a width: the FlatList sizes its scrollable content from
 		// this style, and the sortable list clamps a dragged tile to that
@@ -172,19 +172,19 @@ const makeStyles = (colors: ThemeColors) =>
 		},
 		badge: {
 			position: "absolute",
-			top: 4,
-			width: 22,
-			height: 22,
-			borderRadius: 11,
+			top: 4 * fontScale,
+			width: 22 * fontScale,
+			height: 22 * fontScale,
+			borderRadius: 11 * fontScale,
 			alignItems: "center",
 			justifyContent: "center",
 			backgroundColor: colors.overlay
 		},
 		downloadButton: {
-			left: 4
+			left: 4 * fontScale
 		},
 		removeButton: {
-			right: 4
+			right: 4 * fontScale
 		},
 		removeText: {
 			color: colors.textInverse,

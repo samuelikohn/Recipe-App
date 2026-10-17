@@ -68,7 +68,7 @@ export function useTheme(): ThemeContextValue {
 	return value
 }
 
-type StyleFactory<T> = (colors: ThemeColors) => T
+type StyleFactory<T> = (colors: ThemeColors, fontScale: number) => T
 
 // Three-level cache: factory -> palette -> font scale -> the StyleSheet it
 // produced. Style factories are module-level constants, there are only ever
@@ -114,7 +114,7 @@ function scaleFonts<T extends StyleSheet.NamedStyles<T>>(
  * Theme-aware replacement for a module-level `StyleSheet.create`. Define the
  * sheet as a factory outside the component and call this inside it:
  *
- *   const makeStyles = (colors: ThemeColors) =>
+ *   const makeStyles = (colors: ThemeColors, fontScale: number) =>
  *     StyleSheet.create({ card: { backgroundColor: colors.surface } })
  *
  *   function Card() {
@@ -127,8 +127,8 @@ function scaleFonts<T extends StyleSheet.NamedStyles<T>>(
  *
  * This is also where the user's "Text size" preference takes effect: every
  * fontSize/lineHeight the factory returns is multiplied by the current font
- * scale, so factories keep writing design sizes and never read the scale
- * themselves.
+ * scale. Factories can also use `fontScale` for dimensions that wrap text or
+ * text-like icons, such as a chip's padding or an icon button's diameter.
  */
 export function useThemedStyles<T extends StyleSheet.NamedStyles<T>>(
 	factory: StyleFactory<T>
@@ -147,7 +147,7 @@ export function useThemedStyles<T extends StyleSheet.NamedStyles<T>>(
 	}
 	let styles = byScale.get(fontScale) as T | undefined
 	if (!styles) {
-		styles = scaleFonts(factory(colors), fontScale)
+		styles = scaleFonts(factory(colors, fontScale), fontScale)
 		byScale.set(fontScale, styles)
 	}
 	return styles
