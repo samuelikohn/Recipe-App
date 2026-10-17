@@ -2,16 +2,8 @@ Tags
 - make tags searchable
 - select tags by pressing on recipe cards
 Share recipes
-- Export as pdf
 - write to binary file
 - import from binary file, validate schema
 Move ingredients focus to next field on click done
 if equipment is empty, close on check done
 add component to other recipe
-move delete to recipe kebab
-
-text size slider
-    - tags are cut off on bottom
-    - serving counter +/- are off center
-    - background for image X
-    - download icon doesn't scale

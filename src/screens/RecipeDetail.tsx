@@ -1,6 +1,6 @@
 import * as Clipboard from "expo-clipboard"
 import * as Haptics from "expo-haptics"
-import { useLayoutEffect, useState } from "react"
+import { useLayoutEffect, useState, useCallback } from "react"
 import {
 	ActivityIndicator,
 	Alert,
@@ -97,6 +97,29 @@ export function RecipeDetailScreen({
 	const styles = useThemedStyles(makeStyles)
 	const [servings, setServings] = useState<number | null>(null)
 
+	const onDelete = useCallback(async () => {
+		Alert.alert(
+			"Delete recipe?",
+			`"${recipe!.name}" will be permanently removed.`,
+			[
+				{ text: "Cancel", style: "cancel" },
+				{
+					text: "Delete",
+					style: "destructive",
+					onPress: async () => {
+						// Clean up image files before dropping the row — after
+						// the DB delete the filepaths are gone.
+						for (const filepath of recipe!.images) {
+							await deleteImageFile(filepath)
+						}
+						await deleteRecipe(recipe!.name)
+						navigation.goBack()
+					}
+				}
+			]
+		)
+	}, [navigation, recipe])
+
 	useLayoutEffect(() => {
 		navigation.setOptions({
 			title: recipe?.name ?? "Recipe",
@@ -106,6 +129,7 @@ export function RecipeDetailScreen({
 						items={[
 							{
 								label: "Edit",
+								warn: false,
 								onPress: () =>
 									navigation.navigate("RecipeForm", {
 										name: recipe.name
@@ -113,6 +137,7 @@ export function RecipeDetailScreen({
 							},
 							{
 								label: "Duplicate",
+								warn: false,
 								onPress: async () => {
 									try {
 										const copyName =
@@ -127,6 +152,7 @@ export function RecipeDetailScreen({
 							},
 							{
 								label: "Copy as text",
+								warn: false,
 								onPress: () =>
 									onCopyAsText(
 										recipe,
@@ -135,17 +161,23 @@ export function RecipeDetailScreen({
 							},
 							{
 								label: "Export as PDF",
+								warn: false,
 								onPress: () =>
 									onExportAsPdf(
 										recipe,
 										servings ?? recipe.num_servings
 									)
+							},
+							{
+								label: "Delete Recipe",
+								warn: true,
+								onPress: onDelete
 							}
 						]}
 					/>
 				) : null
 		})
-	}, [navigation, recipe, servings])
+	}, [navigation, recipe, servings, onDelete])
 
 	if (loading) {
 		return <ActivityIndicator style={styles.loading} />
@@ -170,29 +202,6 @@ export function RecipeDetailScreen({
 		0
 	)
 	const totalTime = prepTime + cookTime
-
-	async function onDelete() {
-		Alert.alert(
-			"Delete recipe?",
-			`"${recipe!.name}" will be permanently removed.`,
-			[
-				{ text: "Cancel", style: "cancel" },
-				{
-					text: "Delete",
-					style: "destructive",
-					onPress: async () => {
-						// Clean up image files before dropping the row — after
-						// the DB delete the filepaths are gone.
-						for (const filepath of recipe!.images) {
-							await deleteImageFile(filepath)
-						}
-						await deleteRecipe(recipe!.name)
-						navigation.goBack()
-					}
-				}
-			]
-		)
-	}
 
 	return (
 		<ScrollView
@@ -260,10 +269,6 @@ export function RecipeDetailScreen({
 					servingsMultiplier={multiplier}
 				/>
 			))}
-
-			<Pressable onPress={onDelete} style={styles.deleteButton}>
-				<Text style={styles.deleteText}>Delete recipe</Text>
-			</Pressable>
 		</ScrollView>
 	)
 }
@@ -345,17 +350,5 @@ const makeStyles = (colors: ThemeColors, fontScale: number) =>
 			...typography.sectionHeader,
 			color: colors.textMuted,
 			marginBottom: 6
-		},
-		deleteButton: {
-			margin: 24,
-			padding: 12,
-			borderRadius: 8,
-			borderWidth: 1,
-			borderColor: colors.danger,
-			alignItems: "center"
-		},
-		deleteText: {
-			color: colors.danger,
-			fontWeight: fontWeight.semibold
 		}
 	})

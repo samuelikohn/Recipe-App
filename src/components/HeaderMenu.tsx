@@ -6,6 +6,7 @@ import { ThemeColors } from "../theme/colors"
 
 export type HeaderMenuItem = {
 	label: string
+	warn: boolean
 	onPress: () => void
 }
 
@@ -56,7 +57,13 @@ export function HeaderMenu({ items }: Props) {
 									item.onPress()
 								}}
 							>
-								<Text style={styles.itemText}>
+								<Text
+									style={
+										item.warn
+											? styles.warnText
+											: styles.itemText
+									}
+								>
 									{item.label}
 								</Text>
 							</Pressable>
@@ -100,5 +107,9 @@ const makeStyles = (colors: ThemeColors) =>
 		itemText: {
 			fontSize: 16,
 			color: colors.primary
+		},
+		warnText: {
+			fontSize: 16,
+			color: colors.danger
 		}
 	})

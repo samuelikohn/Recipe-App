@@ -77,6 +77,7 @@ export function RecipeListScreen({ navigation }: ScreenProps<"RecipeList">) {
 						items={[
 							{
 								label: "Settings",
+								warn: false,
 								onPress: () => navigation.navigate("Settings")
 							}
 						]}
