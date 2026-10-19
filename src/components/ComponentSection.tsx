@@ -2,6 +2,7 @@ import { Ionicons } from "@expo/vector-icons"
 import { Pressable, StyleSheet, Text, View } from "react-native"
 import { Component, ingredientKey } from "../models/types"
 import { useTheme, useThemedStyles } from "../theme/ThemeProvider"
+import { usePreferences } from "../hooks/PreferencesProvider"
 import { ThemeColors } from "../theme/colors"
 import { fontSize, fontWeight, typography } from "../theme/typography"
 import { splitDirectionSteps } from "../utils/directions"
@@ -32,22 +33,25 @@ export function ComponentSection({
 		.map((step) => step.trim())
 		.filter((step) => step.length > 0)
 	const { colors, fontScale } = useTheme()
+	const { preferences } = usePreferences()
 
 	return (
 		<View style={styles.container}>
 			<View style={styles.titleRow}>
 				<Text style={styles.title}>{component.name}</Text>
-				<Pressable
-					onPress={onCopyToRecipe}
-					hitSlop={8}
-					accessibilityLabel="Copy recipe component"
-				>
-					<Ionicons
-						name="copy-outline"
-						size={18 * fontScale}
-						color={colors.textInverse}
-					/>
-				</Pressable>
+				{preferences.showComponentCopy ? (
+					<Pressable
+						onPress={onCopyToRecipe}
+						hitSlop={8}
+						accessibilityLabel="Copy recipe component"
+					>
+						<Ionicons
+							name="copy-outline"
+							size={18 * fontScale}
+							color={colors.textInverse}
+						/>
+					</Pressable>
+				) : null}
 			</View>
 
 			{totalTime > 0 ? (

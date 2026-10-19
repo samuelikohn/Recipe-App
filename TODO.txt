@@ -9,4 +9,3 @@ if equipment is empty, close on check done
 
 Copy compnent to other recipe:
 - change successful copy to navigate to target recipe
-- add setting to display copy button

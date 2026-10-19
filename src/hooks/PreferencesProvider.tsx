@@ -22,6 +22,8 @@ export type Preferences = {
 	showRecipeCount: boolean
 	/** Multiplier applied to every font size; 1 = design size. Read through useTheme. */
 	fontScale: number
+	/* Whether to show the copy icon on recipe components */
+	showComponentCopy: boolean
 }
 
 /**
@@ -31,13 +33,15 @@ export type Preferences = {
 const KEYS = {
 	themeMode: "theme_mode",
 	showRecipeCount: "show_recipe_count",
-	fontScale: "font_scale"
+	fontScale: "font_scale",
+	showComponentCopy: "show_copy_component"
 } as const satisfies Record<keyof Preferences, string>
 
 const DEFAULTS: Preferences = {
 	themeMode: "system",
 	showRecipeCount: true,
-	fontScale: 1
+	fontScale: 1,
+	showComponentCopy: false
 }
 
 type PreferencesContextValue = {
@@ -63,6 +67,7 @@ function hydrate(rows: Record<string, string>): Preferences {
 	const storedTheme = rows[KEYS.themeMode]
 	const storedCount = rows[KEYS.showRecipeCount]
 	const storedScale = Number(rows[KEYS.fontScale])
+	const storedCopy = rows[KEYS.showComponentCopy]
 
 	return {
 		fontScale: Number.isFinite(storedScale)
@@ -72,7 +77,11 @@ function hydrate(rows: Record<string, string>): Preferences {
 		showRecipeCount:
 			storedCount === undefined
 				? DEFAULTS.showRecipeCount
-				: storedCount === "true"
+				: storedCount === "true",
+		showComponentCopy:
+			storedCopy === undefined
+				? DEFAULTS.showComponentCopy
+				: storedCopy === "false"
 	}
 }
 

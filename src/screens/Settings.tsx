@@ -46,13 +46,24 @@ export function SettingsScreen({ navigation }: ScreenProps<"Settings">) {
 				<TextSizeRow />
 			</Section>
 
-			<Section title="Recipe list">
+			<Section title="Recipe List">
 				<ToggleRow
 					title="Show recipe count"
 					subtitle="Put the number of recipes being shown in the header"
 					value={preferences.showRecipeCount}
 					onValueChange={(next) =>
 						setPreference("showRecipeCount", next)
+					}
+				/>
+			</Section>
+
+			<Section title="Recipe Details">
+				<ToggleRow
+					title="Show component copy button"
+					subtitle="Displays a copy icon on recipe components to copy the component to another recipe"
+					value={preferences.showComponentCopy}
+					onValueChange={(next) =>
+						setPreference("showComponentCopy", next)
 					}
 				/>
 			</Section>
