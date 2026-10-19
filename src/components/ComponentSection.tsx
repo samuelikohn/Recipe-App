@@ -1,6 +1,7 @@
+import { Ionicons } from "@expo/vector-icons"
 import { Pressable, StyleSheet, Text, View } from "react-native"
 import { Component, ingredientKey } from "../models/types"
-import { useThemedStyles } from "../theme/ThemeProvider"
+import { useTheme, useThemedStyles } from "../theme/ThemeProvider"
 import { ThemeColors } from "../theme/colors"
 import { fontSize, fontWeight, typography } from "../theme/typography"
 import { splitDirectionSteps } from "../utils/directions"
@@ -30,10 +31,25 @@ export function ComponentSection({
 	const directionSteps = splitDirectionSteps(component.directions)
 		.map((step) => step.trim())
 		.filter((step) => step.length > 0)
+	const { colors, fontScale } = useTheme()
 
 	return (
 		<View style={styles.container}>
-			<Text style={styles.title}>{component.name}</Text>
+			<View style={styles.titleRow}>
+				<Text style={styles.title}>{component.name}</Text>
+				<Pressable
+					onPress={onCopyToRecipe}
+					hitSlop={8}
+					accessibilityLabel="Copy recipe component"
+				>
+					<Ionicons
+						name="copy-outline"
+						size={18 * fontScale}
+						color={colors.textInverse}
+					/>
+				</Pressable>
+			</View>
+
 			{totalTime > 0 ? (
 				<Text style={styles.timing}>
 					Prep {formatDuration(component.prep_time)} · Cook{" "}
@@ -72,12 +88,6 @@ export function ComponentSection({
 					<DirectionsList directions={component.directions} />
 				</View>
 			) : null}
-
-			<Pressable onPress={onCopyToRecipe} style={styles.copyButton}>
-				<Text style={styles.copyButtonText}>
-					Copy to another recipe
-				</Text>
-			</Pressable>
 		</View>
 	)
 }
@@ -123,5 +133,10 @@ const makeStyles = (colors: ThemeColors) =>
 			fontSize: fontSize.meta,
 			fontWeight: fontWeight.semibold,
 			color: colors.primaryOn
+		},
+		titleRow: {
+			display: "flex",
+			flexDirection: "row",
+			justifyContent: "space-between"
 		}
 	})

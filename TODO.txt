@@ -7,5 +7,6 @@ Share recipes
 Move ingredients focus to next field on click done
 if equipment is empty, close on check done
 
-change styling of copy component button
-change successful copy to navigate to target recipe
+Copy compnent to other recipe:
+- change successful copy to navigate to target recipe
+- add setting to display copy button
