@@ -142,7 +142,7 @@ export function RecipeDetailScreen({
 									try {
 										const copyName =
 											await duplicateRecipe(recipe)
-										navigation.push("RecipeDetail", {
+										navigation.replace("RecipeDetail", {
 											name: copyName
 										})
 									} catch {

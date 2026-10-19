@@ -94,7 +94,9 @@ export function ComponentCopyTargetScreen({
 		setCopying(true)
 		try {
 			await copyComponentToRecipe(targetRecipeName, component)
-			navigation.goBack()
+			// Drop the transient picker from the stack. The destination recipe's
+			// normal Back button will then return to the source recipe detail.
+			navigation.replace("RecipeDetail", { name: targetRecipeName })
 		} catch (error) {
 			const message =
 				error instanceof ComponentNameConflictError

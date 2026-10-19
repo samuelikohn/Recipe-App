@@ -6,6 +6,3 @@ Share recipes
 - import from binary file, validate schema
 Move ingredients focus to next field on click done
 if equipment is empty, close on check done
-
-Copy compnent to other recipe:
-- change successful copy to navigate to target recipe
