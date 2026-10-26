@@ -49,6 +49,23 @@ export async function persistPickedImage(sourceUri: string): Promise<string> {
 	return destinationUri
 }
 
+/** Writes image bytes embedded in an imported recipe into persistent storage. */
+export async function persistImportedImage(
+	bytes: Uint8Array,
+	mimeType: string
+): Promise<string> {
+	await ensureImagesDirExists()
+
+	const filename = `${Date.now()}-${Math.round(Math.random() * 1e9)}${imageExtension(
+		mimeType
+	)}`
+	const destinationUri = imagesDirectory + filename
+	await FileSystem.writeAsStringAsync(destinationUri, bytesToBase64(bytes), {
+		encoding: FileSystem.EncodingType.Base64
+	})
+	return destinationUri
+}
+
 /**
  * Removes an image file from disk. Deleting the DB row (directly, or via a
  * recipe delete cascade) never touches the filesystem — call this
@@ -56,6 +73,26 @@ export async function persistPickedImage(sourceUri: string): Promise<string> {
  */
 export async function deleteImageFile(filepath: string): Promise<void> {
 	await FileSystem.deleteAsync(filepath, { idempotent: true })
+}
+
+function imageExtension(mimeType: string): string {
+	if (mimeType === "image/jpeg") return ".jpg"
+	if (mimeType === "image/png") return ".png"
+	if (mimeType === "image/webp") return ".webp"
+	if (mimeType === "image/heic") return ".heic"
+	if (mimeType === "image/heif") return ".heif"
+	return ".bin"
+}
+
+function bytesToBase64(bytes: Uint8Array): string {
+	const chunkSize = 0x8000
+	let binary = ""
+	for (let start = 0; start < bytes.length; start += chunkSize) {
+		binary += String.fromCharCode(
+			...bytes.subarray(start, start + chunkSize)
+		)
+	}
+	return btoa(binary)
 }
 
 /**

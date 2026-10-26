@@ -1,7 +1,12 @@
 import * as FileSystem from "expo-file-system"
 import * as Sharing from "expo-sharing"
+import { unzipSync } from "fflate"
 import { Platform } from "react-native"
+import { z } from "zod"
+import { createRecipe, recipeNameExists } from "../db/repositories/recipes"
 import { Recipe } from "../models/types"
+import { deleteImageFile, persistImportedImage } from "./fileStorage"
+import { validateRecipe } from "./validation"
 
 const MAGIC = new Uint8Array([0x52, 0x43, 0x50, 0x31]) // "RCP1"
 const MIME_TYPE = "application/x-recipe"
@@ -15,6 +20,83 @@ type RecipeFileMetadata = {
 		byteLength: number
 	}[]
 }
+
+export type RecipeImportFile = {
+	name: string
+	uri: string
+}
+
+export type RecipeImportReport = {
+	imported: string[]
+	skipped: {
+		name: string
+		reason: string
+	}[]
+}
+
+type DecodedRecipe = {
+	recipe: Omit<Recipe, "images">
+	images: {
+		mimeType: string
+		bytes: Uint8Array
+	}[]
+}
+
+const ingredientSchema = z
+	.object({
+		name: z.string(),
+		amount: z.number().finite().nonnegative(),
+		unit: z.string(),
+		prep: z.string()
+	})
+	.strict()
+
+const componentSchema = z
+	.object({
+		id: z.number().int().nonnegative(),
+		name: z.string(),
+		directions: z.string(),
+		prep_time: z.number().finite().nonnegative(),
+		cook_time: z.number().finite().nonnegative(),
+		ingredients: z.array(ingredientSchema),
+		equipment: z.array(z.string())
+	})
+	.strict()
+
+const recipeMetadataSchema = z
+	.object({
+		id: z.number().int().nonnegative(),
+		name: z.string(),
+		num_servings: z.number().finite().positive(),
+		directions: z.string(),
+		prep_time: z.number().finite().nonnegative(),
+		cook_time: z.number().finite().nonnegative(),
+		ingredients: z.array(ingredientSchema),
+		components: z.array(componentSchema),
+		tags: z.array(z.string())
+	})
+	.strict()
+
+const metadataSchema = z
+	.object({
+		recipe: recipeMetadataSchema,
+		images: z.array(
+			z
+				.object({
+					mimeType: z.enum([
+						"image/jpeg",
+						"image/png",
+						"image/webp",
+						"image/heic",
+						"image/heif",
+						"application/octet-stream"
+					]),
+					byteLength: z.number().int().nonnegative()
+				})
+				.strict()
+		)
+	})
+	.strict()
 
 /**
  * Writes a self-contained recipe file and opens the system share sheet.
@@ -61,6 +143,167 @@ export async function exportRecipesAsZip(recipes: Recipe[]): Promise<void> {
 		ZIP_MIME_TYPE,
 		"Export recipes"
 	)
+}
+
+/**
+ * Imports every supported recipe file in `files`. ZIP entry paths are walked
+ * by the archive decoder; only .recipe entries are candidates for import.
+ */
+export async function importRecipeFiles(
+	files: RecipeImportFile[]
+): Promise<RecipeImportReport> {
+	const report: RecipeImportReport = { imported: [], skipped: [] }
+	const candidates: { name: string; bytes: Uint8Array }[] = []
+
+	for (const file of files) {
+		try {
+			const bytes = await readFileBytes(file.uri)
+			if (hasExtension(file.name, ".recipe")) {
+				candidates.push({ name: file.name, bytes })
+			} else if (hasExtension(file.name, ".zip")) {
+				for (const [entryName, entryBytes] of Object.entries(
+					unzipSync(bytes)
+				)) {
+					if (hasExtension(entryName, ".recipe")) {
+						candidates.push({
+							name: `${file.name}:${entryName}`,
+							bytes: entryBytes
+						})
+					}
+				}
+			} else {
+				report.skipped.push({
+					name: file.name,
+					reason: "Only .recipe and .zip files are supported"
+				})
+			}
+		} catch {
+			report.skipped.push({
+				name: file.name,
+				reason: hasExtension(file.name, ".zip")
+					? "Couldn't read ZIP archive"
+					: "Couldn't read file"
+			})
+		}
+	}
+
+	for (const candidate of candidates) {
+		try {
+			const decoded = decodeRecipeBinary(candidate.bytes)
+			const importedName = await importDecodedRecipe(decoded)
+			report.imported.push(importedName)
+		} catch (error) {
+			report.skipped.push({
+				name: candidate.name,
+				reason: errorMessage(error)
+			})
+		}
+	}
+
+	return report
+}
+
+function decodeRecipeBinary(bytes: Uint8Array): DecodedRecipe {
+	if (
+		bytes.byteLength < 8 ||
+		!MAGIC.every((byte, index) => bytes[index] === byte)
+	) {
+		throw new Error("Not a valid .recipe file")
+	}
+	const metadataLength = new DataView(
+		bytes.buffer,
+		bytes.byteOffset,
+		bytes.byteLength
+	).getUint32(4, false)
+	const metadataEnd = 8 + metadataLength
+	if (metadataEnd > bytes.byteLength) {
+		throw new Error("Recipe metadata is incomplete")
+	}
+
+	let parsed: unknown
+	try {
+		parsed = JSON.parse(
+			new TextDecoder("utf-8", { fatal: true }).decode(
+				bytes.subarray(8, metadataEnd)
+			)
+		)
+	} catch {
+		throw new Error("Recipe metadata is invalid")
+	}
+	const metadataResult = metadataSchema.safeParse(parsed)
+	if (!metadataResult.success) {
+		throw new Error("Recipe metadata does not match the required format")
+	}
+	const validation = validateRecipe(metadataResult.data.recipe)
+	if (!validation.ok) {
+		throw new Error(validation.message)
+	}
+
+	let offset = metadataEnd
+	const images: DecodedRecipe["images"] = []
+	for (const image of metadataResult.data.images) {
+		const end = offset + image.byteLength
+		if (end > bytes.byteLength) {
+			throw new Error("Recipe image data is incomplete")
+		}
+		images.push({
+			mimeType: image.mimeType,
+			bytes: bytes.slice(offset, end)
+		})
+		offset = end
+	}
+	if (offset !== bytes.byteLength) {
+		throw new Error("Recipe image data has an invalid length")
+	}
+
+	return { recipe: metadataResult.data.recipe, images }
+}
+
+async function importDecodedRecipe(decoded: DecodedRecipe): Promise<string> {
+	const imagePaths: string[] = []
+	try {
+		for (const image of decoded.images) {
+			imagePaths.push(
+				await persistImportedImage(image.bytes, image.mimeType)
+			)
+		}
+		const name = await uniqueImportedName(decoded.recipe.name)
+		await createRecipe({ ...decoded.recipe, name, images: imagePaths })
+		return name
+	} catch (error) {
+		await Promise.all(
+			imagePaths.map((filepath) => deleteImageFile(filepath))
+		)
+		throw error
+	}
+}
+
+async function uniqueImportedName(name: string): Promise<string> {
+	if (!(await recipeNameExists(name))) return name
+
+	let suffix = 1
+	let candidate = `${name} (imported)`
+	while (await recipeNameExists(candidate)) {
+		suffix += 1
+		candidate = `${name} (imported ${suffix})`
+	}
+	return candidate
+}
+
+async function readFileBytes(uri: string): Promise<Uint8Array> {
+	return base64ToBytes(
+		await FileSystem.readAsStringAsync(uri, {
+			encoding: FileSystem.EncodingType.Base64
+		})
+	)
+}
+
+function hasExtension(filename: string, extension: string): boolean {
+	return filename.toLowerCase().endsWith(extension)
+}
+
+function errorMessage(error: unknown): string {
+	return error instanceof Error ? error.message : "Couldn't import recipe"
 }
 
 async function createRecipeBinary(recipe: Recipe): Promise<Uint8Array> {

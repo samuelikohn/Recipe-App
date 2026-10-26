@@ -1,3 +1,4 @@
+import * as DocumentPicker from "expo-document-picker"
 import { useCallback, useLayoutEffect, useMemo, useRef, useState } from "react"
 import {
 	ActivityIndicator,
@@ -21,7 +22,7 @@ import { Recipe } from "../models/types"
 import { ScreenProps } from "../navigation/types"
 import { useThemedStyles } from "../theme/ThemeProvider"
 import { ThemeColors } from "../theme/colors"
-import { exportRecipesAsZip } from "../utils/recipeBinary"
+import { exportRecipesAsZip, importRecipeFiles } from "../utils/recipeBinary"
 
 /**
  * Root of the app: full recipe list with a tag-filter chip row above it.
@@ -56,6 +57,44 @@ export function RecipeListScreen({ navigation }: ScreenProps<"RecipeList">) {
 			Alert.alert("Couldn't export recipes")
 		}
 	}, [recipes])
+
+	const onImportRecipes = useCallback(async () => {
+		try {
+			const result = await DocumentPicker.getDocumentAsync({
+				type: [
+					"application/x-recipe",
+					"application/zip",
+					"application/x-zip-compressed"
+				],
+				multiple: true,
+				copyToCacheDirectory: true
+			})
+			if (result.canceled) return
+
+			const report = await importRecipeFiles(result.assets)
+			if (report.imported.length === 0) {
+				Alert.alert(
+					"No recipes imported",
+					report.skipped.length
+						? formatImportSummary(report.skipped)
+						: "No .recipe files were found."
+				)
+				return
+			}
+
+			const imported = `Imported ${report.imported.length} recipe${
+				report.imported.length === 1 ? "" : "s"
+			}.`
+			Alert.alert(
+				"Recipes imported",
+				report.skipped.length
+					? `${imported}\n\nSkipped ${report.skipped.length}: ${formatImportSummary(report.skipped)}`
+					: imported
+			)
+		} catch {
+			Alert.alert("Couldn't import recipes")
+		}
+	}, [])
 
 	// `recipes` is already narrowed by the tag filter, so its length is
 	// exactly what the list is showing. Suppressed while a fetch is in flight
@@ -102,6 +141,11 @@ export function RecipeListScreen({ navigation }: ScreenProps<"RecipeList">) {
 					<HeaderMenu
 						items={[
 							{
+								label: "Import recipes",
+								warn: false,
+								onPress: onImportRecipes
+							},
+							{
 								label: "Export visible recipes",
 								warn: false,
 								onPress: onExportVisibleRecipes
@@ -116,7 +160,13 @@ export function RecipeListScreen({ navigation }: ScreenProps<"RecipeList">) {
 				</View>
 			)
 		})
-	}, [navigation, styles, headerTitle, onExportVisibleRecipes])
+	}, [
+		navigation,
+		styles,
+		headerTitle,
+		onExportVisibleRecipes,
+		onImportRecipes
+	])
 
 	// Selecting a tag narrows `recipes`, which narrows `allTags`, so the chip
 	// row's content gets shorter. The ScrollView holds on to its old offset,
@@ -224,6 +274,19 @@ export function RecipeListScreen({ navigation }: ScreenProps<"RecipeList">) {
 			)}
 		</View>
 	)
+}
+
+function formatImportSummary(
+	skipped: { name: string; reason: string }[]
+): string {
+	const maxDetails = 3
+	const details = skipped
+		.slice(0, maxDetails)
+		.map((item) => `${item.name}: ${item.reason}`)
+		.join("\n")
+	return skipped.length > maxDetails
+		? `${details}\n…and ${skipped.length - maxDetails} more`
+		: details
 }
 
 const makeStyles = (colors: ThemeColors) =>
