@@ -1,6 +1,7 @@
 import { useCallback, useLayoutEffect, useMemo, useRef, useState } from "react"
 import {
 	ActivityIndicator,
+	Alert,
 	FlatList,
 	Pressable,
 	ScrollView,
@@ -13,11 +14,14 @@ import { EmptyState } from "../components/EmptyState"
 import { HeaderMenu } from "../components/HeaderMenu"
 import { RecipeCard } from "../components/RecipeCard"
 import { TagChip } from "../components/TagChip"
+import { getRecipeByName } from "../db/repositories/recipes"
 import { usePreferences } from "../hooks/PreferencesProvider"
 import { useRecipes } from "../hooks/useRecipes"
+import { Recipe } from "../models/types"
 import { ScreenProps } from "../navigation/types"
 import { useThemedStyles } from "../theme/ThemeProvider"
 import { ThemeColors } from "../theme/colors"
+import { exportRecipesAsZip } from "../utils/recipeBinary"
 
 /**
  * Root of the app: full recipe list with a tag-filter chip row above it.
@@ -30,6 +34,28 @@ export function RecipeListScreen({ navigation }: ScreenProps<"RecipeList">) {
 	const styles = useThemedStyles(makeStyles)
 	const { preferences } = usePreferences()
 	const { recipes, loading, error } = useRecipes(selectedTags)
+
+	const onExportVisibleRecipes = useCallback(async () => {
+		if (recipes.length === 0) {
+			Alert.alert("No recipes to export")
+			return
+		}
+		try {
+			const fullRecipes = await Promise.all(
+				recipes.map((recipe) => getRecipeByName(recipe.name))
+			)
+			if (fullRecipes.some((recipe) => recipe === null)) {
+				throw new Error("A recipe is no longer available")
+			}
+			await exportRecipesAsZip(
+				fullRecipes.filter(
+					(recipe): recipe is Recipe => recipe !== null
+				)
+			)
+		} catch {
+			Alert.alert("Couldn't export recipes")
+		}
+	}, [recipes])
 
 	// `recipes` is already narrowed by the tag filter, so its length is
 	// exactly what the list is showing. Suppressed while a fetch is in flight
@@ -76,6 +102,11 @@ export function RecipeListScreen({ navigation }: ScreenProps<"RecipeList">) {
 					<HeaderMenu
 						items={[
 							{
+								label: "Export visible recipes",
+								warn: false,
+								onPress: onExportVisibleRecipes
+							},
+							{
 								label: "Settings",
 								warn: false,
 								onPress: () => navigation.navigate("Settings")
@@ -85,7 +116,7 @@ export function RecipeListScreen({ navigation }: ScreenProps<"RecipeList">) {
 				</View>
 			)
 		})
-	}, [navigation, styles, headerTitle])
+	}, [navigation, styles, headerTitle, onExportVisibleRecipes])
 
 	// Selecting a tag narrows `recipes`, which narrows `allTags`, so the chip
 	// row's content gets shorter. The ScrollView holds on to its old offset,
