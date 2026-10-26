@@ -32,6 +32,7 @@ import { fontSize, fontWeight, typography } from "../theme/typography"
 import { deleteImageFile, persistPickedImage } from "../utils/fileStorage"
 import { formatDuration } from "../utils/format"
 import { exportRecipeAsPdf } from "../utils/recipePdf"
+import { exportRecipeAsBinary } from "../utils/recipeBinary"
 import { formatRecipeAsText } from "../utils/recipeText"
 
 async function onCopyAsText(recipe: Recipe, servings: number) {
@@ -55,6 +56,14 @@ async function onExportAsPdf(recipe: Recipe, servings: number) {
 		await exportRecipeAsPdf(recipe, servings)
 	} catch {
 		Alert.alert("Couldn't export recipe as PDF")
+	}
+}
+
+async function onExportRecipeFile(recipe: Recipe) {
+	try {
+		await exportRecipeAsBinary(recipe)
+	} catch {
+		Alert.alert("Couldn't export recipe file")
 	}
 }
 
@@ -167,6 +176,11 @@ export function RecipeDetailScreen({
 										recipe,
 										servings ?? recipe.num_servings
 									)
+							},
+							{
+								label: "Export recipe file",
+								warn: false,
+								onPress: () => onExportRecipeFile(recipe)
 							},
 							{
 								label: "Delete Recipe",
