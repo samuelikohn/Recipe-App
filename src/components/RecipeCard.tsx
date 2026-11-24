@@ -9,6 +9,8 @@ import { TagChip } from "./TagChip"
 type Props = {
 	recipe: RecipeSummary
 	onPress: () => void
+	/** Optional action for a tag chip, such as applying a list filter. */
+	onTagPress?: (tag: string) => void
 }
 
 /**
@@ -17,7 +19,7 @@ type Props = {
  * lives on RecipeDetailScreen — we cap at three chips here so cards stay
  * roughly the same height.
  */
-export function RecipeCard({ recipe, onPress }: Props) {
+export function RecipeCard({ recipe, onPress, onTagPress }: Props) {
 	const styles = useThemedStyles(makeStyles)
 	const visibleTags = recipe.tags.slice(0, 3)
 	const extra = recipe.tags.length - visibleTags.length
@@ -48,7 +50,15 @@ export function RecipeCard({ recipe, onPress }: Props) {
 				{visibleTags.length > 0 ? (
 					<View style={styles.tagRow}>
 						{visibleTags.map((tag) => (
-							<TagChip key={tag} label={tag} />
+							<TagChip
+								key={tag}
+								label={tag}
+								onPress={
+									onTagPress
+										? () => onTagPress(tag)
+										: undefined
+								}
+							/>
 						))}
 						{extra > 0 ? (
 							<Text style={styles.moreTags}>+{extra}</Text>

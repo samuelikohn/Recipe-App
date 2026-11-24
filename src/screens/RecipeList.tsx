@@ -197,6 +197,14 @@ export function RecipeListScreen({ navigation }: ScreenProps<"RecipeList">) {
 		)
 	}
 
+	// Card chips only add a filter. Unlike the top-row chips, pressing an
+	// already-selected card tag deliberately leaves the current filter intact.
+	function selectTag(tag: string) {
+		setSelectedTags((current) =>
+			current.includes(tag) ? current : [...current, tag]
+		)
+	}
+
 	if (error) {
 		return (
 			<EmptyState
@@ -263,6 +271,7 @@ export function RecipeListScreen({ navigation }: ScreenProps<"RecipeList">) {
 					renderItem={({ item }) => (
 						<RecipeCard
 							recipe={item}
+							onTagPress={selectTag}
 							onPress={() =>
 								navigation.navigate("RecipeDetail", {
 									name: item.name

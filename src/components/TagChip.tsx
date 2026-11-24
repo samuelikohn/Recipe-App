@@ -33,7 +33,13 @@ export function TagChip({ label, selected, onPress, onRemove }: Props) {
 
 	if (onPress) {
 		return (
-			<Pressable onPress={onPress} style={styles.pressable}>
+			<Pressable
+				onPress={(event) => {
+					event.stopPropagation()
+					onPress()
+				}}
+				style={styles.pressable}
+			>
 				{body}
 			</Pressable>
 		)
