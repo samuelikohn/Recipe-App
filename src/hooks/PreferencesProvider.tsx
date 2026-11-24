@@ -81,7 +81,7 @@ function hydrate(rows: Record<string, string>): Preferences {
 		showComponentCopy:
 			storedCopy === undefined
 				? DEFAULTS.showComponentCopy
-				: storedCopy === "false"
+				: storedCopy === "true"
 	}
 }
 

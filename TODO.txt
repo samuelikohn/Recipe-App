@@ -1,8 +1,7 @@
 Tags
 - make tags searchable
 - select tags by pressing on recipe cards
-Share recipes
-- write to binary file
-- import from binary file, validate schema
+- deselecting tag resets tag scrolling position
 Move ingredients focus to next field on click done
 if equipment is empty, close on check done
+make search, +, and kebab further apart
